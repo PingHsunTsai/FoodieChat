@@ -4,12 +4,12 @@ import  NavigateButtom  from '../components/NavigateButton';
 const Home = () => {
 
   return (
-    <section className={`${styles.padding} max-w-7xl mx-auto relative`}>
-
-      <h1 className={`${styles.heroHeadText}`}>
+    <section>
+      
+      <h1 className='font-black text-white lg:text-[80px] sm:text-[60px] xs:text-[50px] text-[40px] lg:leading-[98px] mt-2'>
         LetsChat
         <br className='max-md:hidden'/>
-        <span className='orange_gradient text-center'> AI-Powered Networking</span>
+        <span className='text-center'> AI-Powered Networking</span>
       </h1>
 
       <div 
