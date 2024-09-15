@@ -2,8 +2,8 @@ import "./globals.css";
 import { styles } from '../style';
 
 export const metadata = {
-  title: "LetsChat",
-  description: "AI-Powered Networking",
+  title: "FoodieChat",
+  description: "Connect to worldwild foodies",
 };
 
 export default function RootLayout({ children }) {

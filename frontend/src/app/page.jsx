@@ -7,9 +7,9 @@ const Home = () => {
     <section>
       
       <h1 className='font-black text-white lg:text-[80px] sm:text-[60px] xs:text-[50px] text-[40px] lg:leading-[98px] mt-2'>
-        LetsChat
+        FoodieChat
         <br className='max-md:hidden'/>
-        <span className='text-center'> AI-Powered Networking</span>
+        <span className='text-center'>Connect to worldwild foodies</span>
       </h1>
 
       <div 
