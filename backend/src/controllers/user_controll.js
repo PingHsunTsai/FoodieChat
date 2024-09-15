@@ -3,13 +3,30 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
 exports.register = async (req, res) => {
-    const { email, password } = req.body;
+    const { email, password, userName, favoriteDrink, favoriteFood, livingCountry } = req.body;
+
     try {
+        if (!email || !password || !userName) {
+            return res.status(400).json({ error: 'Email, password, and username are required' });
+        }
+
         const hashedPassword = await bcrypt.hash(password, 10);
-        const newUser = await User.create({ email, password: hashedPassword });
+
+        const newUser = await User.create({
+            email,
+            password: hashedPassword,
+            userName,
+            favoriteDrink,
+            favoriteFood,
+            livingCountry
+        });
 
         res.status(201).json({ message: 'User registered successfully', user: newUser });
     } catch (error) {
+        console.error('Registration error:', error);
+        if (error.name === 'SequelizeUniqueConstraintError') {
+            return res.status(400).json({ error: 'Email or username already exists' });
+        }
         res.status(500).json({ error: 'Registration failed' });
     }
 };

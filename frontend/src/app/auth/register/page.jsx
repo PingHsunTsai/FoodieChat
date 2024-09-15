@@ -1,9 +1,19 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, use } from 'react';
 import { useRouter } from 'next/navigation';
 import { apiRequest } from '../../../route/api';
-import { handleError } from '../../../components';
+import { handleError, drinkOptions, foodOptions, countryOptions } from '../../../components';
+
+
+const renderOptions = (options) => {
+  return options.map((option) => (
+    <option key={option.value} value={option.value}>
+      {option.label}
+    </option>
+  ));
+};
+
 
 export default function Register() {
   const router = useRouter(); 
@@ -12,13 +22,16 @@ export default function Register() {
   const [form, setForm] = useState({
     email: '',
     password: '',
+    userName: '',
+    favoriteDrink: '',
+    favoriteFood: '',
+    livingCountry: '',
   });
   const [error, setError] = useState('');
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm({ ...form, [name]: value });
-    console.log(form);
   }
 
   const handleRegister = async (e) => {
@@ -29,12 +42,15 @@ export default function Register() {
       const res = await apiRequest(
         'http://localhost:5000/api/register', 
         'POST', 
-        { 'email': form.email, 'password': form.password });
-
-      if (res.message) {
-        router.push('/auth/login');
-      }
+        { 'email': form.email, 
+          'password': form.password,
+          'userName': form.userName,
+          'favoriteDrink': form.favoriteDrink,
+          'favoriteFood': form.favoriteFood,
+          'livingCountry': form.livingCountry, 
+        });
       setLoading(false);
+      if (res.message) { router.push('/auth/login'); }
     } catch (error) {
       setError(handleError(error));
       setLoading(false);
@@ -79,7 +95,62 @@ export default function Register() {
             text-black rounded-lg outline-none border-none font-medium"
           />
         </label>
-
+        <label className="flex flex-col">
+          <span className="text-white font-medium mb-4">
+            Your User Name
+          </span>
+          <input
+            type="text"
+            name="userName"
+            value={form.userName}
+            onChange={handleChange}
+            placeholder="Enter your user name"
+            className="bg-tertiary py-4 px-6 placeholder:text-secondary
+            text-black rounded-lg outline-none border-none font-medium"
+          />
+        </label>
+        <label className="flex flex-col">
+          <span className="text-white font-medium mb-4">
+            Your Favorite Drink
+          </span>
+          <select
+            name="favoriteDrink"
+            value={form.favoriteDrink}
+            onChange={handleChange}
+            className="bg-tertiary py-4 px-6 text-black rounded-lg outline-none border-none font-medium"
+          >
+            <option value="">Select your favorite drink</option>
+            {renderOptions(drinkOptions)}
+          </select>
+        </label>
+        <label className="flex flex-col">
+          <span className="text-white font-medium mb-4">
+            Your Favorite Food
+          </span>
+          <select
+            name="favoriteFood"
+            value={form.favoriteFood}
+            onChange={handleChange}
+            className="bg-tertiary py-4 px-6 text-black rounded-lg outline-none border-none font-medium"
+          >
+            <option value="">Select your favorite food</option>
+            {renderOptions(foodOptions)}
+          </select>
+        </label>
+        <label className="flex flex-col">
+          <span className="text-white font-medium mb-4">
+            Your Living Country
+          </span>
+          <select
+            name="livingCountry"
+            value={form.livingCountry}
+            onChange={handleChange}
+            className="bg-tertiary py-4 px-6 text-black rounded-lg outline-none border-none font-medium"
+          >
+            <option value="">Select your living country</option>
+            {renderOptions(countryOptions)}
+          </select>
+        </label>
         <button
             type="submit"
             className="bg-sky-400 py-3 px-8 outline-none w-fit

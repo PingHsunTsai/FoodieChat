@@ -18,6 +18,8 @@ export default function Login() {
   
       if (res.token) {
         localStorage.setItem('token', res.token);
+        console.log('Login successful');
+        // Redirect to the chat page
       } else {
         throw new Error(res.error || 'Login failed');
       }
