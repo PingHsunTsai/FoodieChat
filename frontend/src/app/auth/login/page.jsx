@@ -1,11 +1,12 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { apiRequest } from '../../../route/api';
 import { handleError } from '../../../components';
 
 export default function Login() {
-
+  const router = useRouter(); 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -18,8 +19,7 @@ export default function Login() {
   
       if (res.token) {
         localStorage.setItem('token', res.token);
-        console.log('Login successful');
-        // Redirect to the chat page
+        router.push(`/user/${res.userId}`); 
       } else {
         throw new Error(res.error || 'Login failed');
       }
