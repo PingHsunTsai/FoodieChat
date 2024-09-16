@@ -2,13 +2,15 @@
 
 require('dotenv').config({ path: '../../../../.env' });
 import { useState, useEffect } from 'react';
-import { Box, Button, List, ListItem, ListItemText, TextField } from '@mui/material';
-import { apiRequest } from '../../../route/api';
+import { useRouter } from 'next/navigation';
+import { Box, Button, List, ListItem, ListItemText, TextField, Typography } from '@mui/material';
+import { apiRequest, handleLogout } from '../../../route/api';
 
-export default function UserPage({ params }) {
-    const host = process.env.DB_HOST;
-    const { userId } = params;
+export default function UserPage() {
+    // TODO fix .env file
+    // const host = process.env.FN_HOST;
 
+    const router = useRouter();
     const [loggedInUser, setLoggedInUser] = useState(null);
     const [friends, setFriends] = useState([]);
     const [selectedFriend, setSelectedFriend] = useState(null);
@@ -22,7 +24,7 @@ export default function UserPage({ params }) {
             try {
                 const userRes = await apiRequest('http://localhost:5000/api/getUser', 'GET');
                 // const friendsRes = await apiRequest(`${host}api/friends`, 'GET');
-                
+
                 if (!isMounted) {
                     setLoggedInUser({
                         id: userRes.user.id,
@@ -43,13 +45,10 @@ export default function UserPage({ params }) {
         };
     }, []);
 
-    // Search functionality
-    const handleSearch = (e) => {
-        setSearchQuery(e.target.value);
-        // Optionally, you can filter friends based on the search query
-    };
+    const navExplore = () => {
+        router.push(`/explore/${loggedInUser.id}`); 
+    }
 
-    // Function to select a friend from the list
     const selectFriend = (friend) => {
         setSelectedFriend(friend);
         // Fetch chat history or other info related to this friend
@@ -57,7 +56,6 @@ export default function UserPage({ params }) {
 
     return (
         <Box sx={{ display: 'flex', height: '100vh' }}>
-            {/* Left Side */}
             <Box 
                 sx={{ 
                     padding: '16px',
@@ -66,27 +64,49 @@ export default function UserPage({ params }) {
                     flexDirection: 'column'
                 }}
             >
-                {/* Upper Part: Logged-in User Info and Search/Add Friends */}
                 <Box sx={{paddingY: '16px'}}>
-                    <h2>{loggedInUser ? loggedInUser.name : 'User Info'}</h2>
+                    <Box sx={{display: 'flex'}}>
+                        <Box sx={{
+                            width: '50%', 
+                            display: 'flex', 
+                            flexDirection: 'column' 
+                        }}>
+                            <Typography variant="h4" textAlign="center">
+                                {loggedInUser ? loggedInUser.name : 'User Info'}
+                            </Typography>
+                        </Box>
+                        <Box sx={{
+                            width: '50%', 
+                            display: 'flex', 
+                            flexDirection: 'column' 
+                        }}>
+                            <Button 
+                            variant="outlined" 
+                            color="primary" 
+                            sx={{ marginTop: '16px' }}
+                            onClick={() => handleLogout(router)}
+                            >
+                                Logout
+                            </Button>
+                        </Box>
+                    </Box>
                     <Button 
-                        variant="contained" 
+                        variant="outlined" 
                         color="primary" 
                         fullWidth 
                         sx={{ marginTop: '16px' }}
+                        onClick={navExplore}
                     >
                         Explore Foodie
                     </Button>
                 </Box>
-
-                {/* Bottom Part: Friends List */}
                 <Box 
                     sx={{ 
                         flexGrow: 1, 
                         overflowY: 'auto',
                         paddingY: '16px',
                         border: '4px solid white',
-                        borderRadius: 10,
+                        borderRadius: 5,
                     }}
                 >
                     <List>
@@ -101,7 +121,6 @@ export default function UserPage({ params }) {
                 </Box>
             </Box>
 
-            {/* Right Side */}
             <Box 
                 sx={{ 
                     padding: '16px',
@@ -116,7 +135,7 @@ export default function UserPage({ params }) {
                         overflowY: 'auto',
                         padding: '16px',
                         border: '4px solid white',
-                        borderRadius: 10,
+                        borderRadius: 5,
                     }}
                 >
                     {selectedFriend ? (

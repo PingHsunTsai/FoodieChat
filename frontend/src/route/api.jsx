@@ -25,3 +25,8 @@ export const apiRequest = async (url, method = 'POST', body = {}) => {
         throw error;
     }
 };
+
+export const handleLogout = (router) => {
+    localStorage.removeItem('token');
+    router.push('/auth/login');
+};

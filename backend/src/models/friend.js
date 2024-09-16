@@ -1,4 +1,3 @@
-// backend/models/Friend.js
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../config/db');
 
