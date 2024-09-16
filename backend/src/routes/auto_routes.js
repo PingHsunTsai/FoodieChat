@@ -1,6 +1,5 @@
 const express = require('express');
-const { register, login, getUser } = require('../controllers');
-const { getNotFriends } = require('../controllers/friend_controll');
+const { register, login, getUser, getNotFriends } = require('../controllers');
 
 const jwt_middleware = require('./jwt_middleware');
 const router = express.Router();
