@@ -1,11 +1,12 @@
 const express = require('express');
-const { register, login, getUser, getFriends, getStrangers } = require('../controllers');
+const { register, login, addFriend, getUser, getFriends, getStrangers } = require('../controllers');
 
 const jwt_middleware = require('./jwt_middleware');
 const router = express.Router();
 
 router.post('/register', register);
 router.post('/login', login);
+router.post('/addFriend', jwt_middleware, addFriend);
 
 router.get('/getUser', jwt_middleware, getUser);
 router.get('/getFriends', jwt_middleware, getFriends);

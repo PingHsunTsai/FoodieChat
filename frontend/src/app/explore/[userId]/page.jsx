@@ -8,10 +8,12 @@ import AddIcon from '@mui/icons-material/Add';
 import SearchIcon from '@mui/icons-material/Search';
 
 export default function ThreeRowsLayout() {
-    
+
+    const token = localStorage.getItem('token');
     const router = useRouter();
     const [searchQuery, setSearchQuery] = useState('');
     const [strangers, setStrangers] = useState([]);
+    const [updateFlag, setUpdateFlag] = useState(false);
 
     const handleBack = () => {
         router.back();
@@ -20,7 +22,6 @@ export default function ThreeRowsLayout() {
     useEffect(() => {
         async function fetchStrangers() {
 
-            const token = localStorage.getItem('token');
             const headers = {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`,
@@ -37,22 +38,33 @@ export default function ThreeRowsLayout() {
             console.log('Stranger fetched successfully:', strangerData.message);
         }
         fetchStrangers()
-      }, [])
+      }, [updateFlag])
+
+    const handleAddFriend = async (friendId) => {
+
+        const addFriendRes = await fetch('/api/addFriend', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              friendId,
+            }),
+          });      
+      
+        const addFriendData = await addFriendRes.json()
+        
+        if (!addFriendData.success) {
+            throw new Error(addFriendData.error || 'An error occurred while adding friend');
+        }
+
+        console.log('Add friend successfully:', addFriendData.message);
+        setUpdateFlag(prevFlag => !prevFlag);
+    }
 
     const handleSearch = async () => {
-        // console.log('Search query:', searchQuery);
-        // try {
-            
-        //     const notFriendsRes = await apiRequest('http://localhost:5000/api/getNotFriends', 'GET');
-
-        //     if (notFriendsRes){
-        //         setNotFriends(notFriendsRes)
-        //     } else {
-        //         console.log('No results found');
-        //     }
-        // } catch (error) {
-        //     console.error('Error fetching non-friends:', error);
-        // }
+        throw new Error('Not Implemented Error');
     };
 
     return (
@@ -115,25 +127,29 @@ export default function ThreeRowsLayout() {
             borderRadius: 5,
           }}
         >
-            {/* <Typography variant="h4" textAlign="center">Depth search</Typography> */}
             <List dense={false}>
-                {strangers.map((notFriend) => (
+                {strangers.map((stranger) => (
                     <ListItem
-                        key={notFriend.id}
+                        key={stranger.id}
                         secondaryAction={
-                            <IconButton edge="end" aria-label="add">
+                            <IconButton 
+                                edge="end" 
+                                aria-label="add" 
+                                color='info' 
+                                onClick={() => handleAddFriend(stranger.id)}
+                            >
                                 <AddIcon />
                             </IconButton>
-                    }
+                        }
                     >
-                    <ListItemAvatar>
-                        <Avatar>
-                            <SearchIcon />
-                        </Avatar>
-                    </ListItemAvatar>
-                    <ListItemText
-                        primary={notFriend.userName}
-                    />
+                        <ListItemAvatar>
+                            <Avatar>
+                                <SearchIcon />
+                            </Avatar>
+                        </ListItemAvatar>
+                        <ListItemText
+                            primary={stranger.userName}
+                        />
                     </ListItem>
                 ))}
             </List>
