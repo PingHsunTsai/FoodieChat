@@ -1,5 +1,6 @@
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../config/db');
+const User = require('./User');
 
 const Friend = sequelize.define('Friend', {
     userId: {
@@ -11,5 +12,8 @@ const Friend = sequelize.define('Friend', {
         allowNull: false,
     },
 });
+
+// Each friendId references a User
+Friend.belongsTo(User, { foreignKey: 'friendId', as: 'friend' });
 
 module.exports = Friend;

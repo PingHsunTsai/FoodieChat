@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { apiRequest } from '../../../route/api';
 import { Box, List, ListItem, ListItemText, Avatar, ListItemAvatar, InputBase , IconButton , Paper, Typography } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import AddIcon from '@mui/icons-material/Add';
@@ -11,31 +10,49 @@ import SearchIcon from '@mui/icons-material/Search';
 export default function ThreeRowsLayout() {
     
     const router = useRouter();
-    
-
     const [searchQuery, setSearchQuery] = useState('');
-    const [notFriends, setNotFriends] = useState([]);
-    const [selectedFriend, setSelectedFriend] = useState(null);
-
+    const [strangers, setStrangers] = useState([]);
 
     const handleBack = () => {
         router.back();
     }
 
+    useEffect(() => {
+        async function fetchStrangers() {
+
+            const token = localStorage.getItem('token');
+            const headers = {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            };
+
+            const strangerRes = await fetch('/api/getStrangers', { method: 'GET', headers })
+            const strangerData = await strangerRes.json()
+            
+            if (!strangerData.success) {
+                throw new Error(strangerData.error || 'An error occurred while fetching user');
+            }
+
+            setStrangers(strangerData.data);
+            console.log('Stranger fetched successfully:', strangerData.message);
+        }
+        fetchStrangers()
+      }, [])
+
     const handleSearch = async () => {
         // console.log('Search query:', searchQuery);
-        try {
+        // try {
             
-            const notFriendsRes = await apiRequest('http://localhost:5000/api/getNotFriends', 'GET');
+        //     const notFriendsRes = await apiRequest('http://localhost:5000/api/getNotFriends', 'GET');
 
-            if (notFriendsRes){
-                setNotFriends(notFriendsRes)
-            } else {
-                console.log('No results found');
-            }
-        } catch (error) {
-            console.error('Error fetching non-friends:', error);
-        }
+        //     if (notFriendsRes){
+        //         setNotFriends(notFriendsRes)
+        //     } else {
+        //         console.log('No results found');
+        //     }
+        // } catch (error) {
+        //     console.error('Error fetching non-friends:', error);
+        // }
     };
 
     return (
@@ -100,7 +117,7 @@ export default function ThreeRowsLayout() {
         >
             {/* <Typography variant="h4" textAlign="center">Depth search</Typography> */}
             <List dense={false}>
-                {notFriends.map((notFriend) => (
+                {strangers.map((notFriend) => (
                     <ListItem
                         key={notFriend.id}
                         secondaryAction={

@@ -2,8 +2,6 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { apiRequest } from '../../../route/api';
-import { handleError } from '../../../components';
 
 export default function Login() {
   const router = useRouter(); 
@@ -14,18 +12,27 @@ export default function Login() {
   const handleLogin = async (e) => {
     e.preventDefault();
 
-    try {
-      const res = await apiRequest('http://localhost:5000/api/login', 'POST', { email, password });
-  
-      if (res.token) {
-        localStorage.setItem('token', res.token);
-        router.push(`/user/${res.userId}`); 
-      } else {
-        throw new Error(res.error || 'Login failed');
-      }
-    } catch (error) {
-      setError(handleError(error));
+    const res = await fetch('/api/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email,
+        password,
+      }),
+    });      
+
+    const resData = await res.json();
+
+    if (!resData.success) {
+      setError(resData.error || 'An register error occurred');
+    } else {
+      localStorage.setItem('token', resData.data.token);
+      router.push(`/user/${resData.data.userId}`); 
+      console.log('Success:', resData.message);
     }
+
   };
 
   return (

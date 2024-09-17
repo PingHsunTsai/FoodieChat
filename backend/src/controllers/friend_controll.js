@@ -42,18 +42,16 @@ exports.getFriends = async (req, res) => {
     }
 };
 
-
-exports.getNotFriends = async (req, res) => {
+exports.getStrangers = async (req, res) => {
     try {
         const friends = await Friend.findAll({
             where: { userId: req.user.id },
             attributes: ['friendId'],
         });
         const friendIds = friends.map(friend => friend.friendId);
-
         const excludeIds = friendIds.length > 0 ? friendIds.concat(req.user.id) : [req.user.id];
 
-        const notFriends = await User.findAll({
+        const strangers = await User.findAll({
             where: {
                 id: {
                     [Op.notIn]: excludeIds,  // Exclude friends and the logged-in user
@@ -61,10 +59,9 @@ exports.getNotFriends = async (req, res) => {
             },
             attributes: ['id', 'userName'],
         });
-
-        res.status(200).json(notFriends);
+        res.status(200).json(strangers);
     } catch (error) {
-        console.error('Error fetching non-friends:', error);
-        res.status(500).json({ error: 'Failed to fetch non-friends' });
+        console.error('Error fetching getStrangers:', error);
+        res.status(500).json({ error: 'Failed to fetch getStrangers' });
     }
 };

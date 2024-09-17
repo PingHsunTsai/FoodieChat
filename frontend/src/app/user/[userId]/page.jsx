@@ -1,48 +1,64 @@
 'use client';
 
-require('dotenv').config({ path: '../../../../.env' });
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Box, Button, List, ListItem, ListItemText, TextField, Typography } from '@mui/material';
-import { apiRequest, handleLogout } from '../../../route/api';
+
+export const handleLogout = (router) => {
+    localStorage.removeItem('token');
+    router.push('/auth/login');
+};
 
 export default function UserPage() {
-    // TODO fix .env file
-    // const host = process.env.FN_HOST;
 
     const router = useRouter();
+    const [error, setError] = useState('');
     const [loggedInUser, setLoggedInUser] = useState(null);
     const [friends, setFriends] = useState([]);
     const [selectedFriend, setSelectedFriend] = useState(null);
-    const [searchQuery, setSearchQuery] = useState('');
 
-    // TODO is there a better way to fetch the logged-in user's info?
     useEffect(() => {
-        let isMounted = true;  // Prevents state updates after unmount
-    
-        const fetchData = async () => {
+        async function fetchData() {
             try {
-                const userRes = await apiRequest('http://localhost:5000/api/getUser', 'GET');
-                // const friendsRes = await apiRequest(`${host}api/friends`, 'GET');
-
-                if (!isMounted) {
-                    setLoggedInUser({
-                        id: userRes.user.id,
-                        name: userRes.user.userName,
-                        email: userRes.user.email,
-                    });
-                    // setFriends(friendsRes);
-                }; 
+                const token = localStorage.getItem('token');
+                const headers = {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                };
+    
+                // Run both requests in parallel
+                const [userRes, friendsRes] = await Promise.all([
+                    fetch('/api/getUser', { method: 'GET', headers }),
+                    fetch('/api/getFriends', { method: 'GET', headers }),
+                ]);
+    
+                const userData = await userRes.json();
+                if (!userData.success) {
+                    throw new Error(userData.error || 'An error occurred while fetching user');
+                }
+    
+                const friendsData = await friendsRes.json();
+                if (!friendsData.success) {
+                    throw new Error(friendsData.error || 'An error occurred while fetching friends');
+                }
+    
+                // Set both user and friends data
+                setLoggedInUser({
+                    id: userData.data.user.id,
+                    name: userData.data.user.userName,
+                    email: userData.data.user.email,
+                });
+    
+                setFriends(friendsData.data);
+    
+                console.log('User fetched successfully:', userData.message);
+                console.log('Friends fetched successfully:', friendsData.message);
             } catch (error) {
-                console.error('Error fetching data', error);
+                setError(error.message || 'An error occurred');
             }
-        };
-    
+        }
+
         fetchData();
-    
-        return () => {
-            isMounted = false;  // Cleanup function to prevent memory leaks
-        };
     }, []);
 
     const navExplore = () => {
@@ -110,13 +126,13 @@ export default function UserPage() {
                     }}
                 >
                     <List>
-                        {friends
+                        {/* {friends
                             .filter(friend => friend.name.toLowerCase().includes(searchQuery.toLowerCase()))
                             .map(friend => (
                                 <ListItem button key={friend.id} onClick={() => selectFriend(friend)}>
                                     <ListItemText primary={friend.name} secondary={friend.email} />
                                 </ListItem>
-                            ))}
+                            ))} */}
                     </List>
                 </Box>
             </Box>

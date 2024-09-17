@@ -2,7 +2,6 @@
 
 import { useState, useRef, use } from 'react';
 import { useRouter } from 'next/navigation';
-import { apiRequest } from '../../../route/api';
 import { handleError, drinkOptions, foodOptions, countryOptions } from '../../../components';
 
 
@@ -35,25 +34,34 @@ export default function Register() {
   }
 
   const handleRegister = async (e) => {
+    
     e.preventDefault();
     setLoading(true);
-    console.log(form);
-    try {
-      const res = await apiRequest(
-        'http://localhost:5000/api/register', 
-        'POST', 
-        { 'email': form.email, 
-          'password': form.password,
-          'userName': form.userName,
-          'favoriteDrink': form.favoriteDrink,
-          'favoriteFood': form.favoriteFood,
-          'livingCountry': form.livingCountry, 
-        });
-      setLoading(false);
-      if (res.message) { router.push('/auth/login'); }
-    } catch (error) {
-      setError(handleError(error));
-      setLoading(false);
+    
+    const res = await fetch('/api/register', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        'email': form.email, 
+        'password': form.password,
+        'userName': form.userName,
+        'favoriteDrink': form.favoriteDrink,
+        'favoriteFood': form.favoriteFood,
+        'livingCountry': form.livingCountry, 
+      }),
+    });     
+
+    setLoading(false);
+
+    const resData = await res.json();
+
+    if (!resData.success) {
+      setError(resData.error || 'An register error occurred');
+    } else {
+      router.push('/auth/login');
+      console.log('Success:', resData.message);
     }
   };
 
