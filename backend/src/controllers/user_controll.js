@@ -1,6 +1,6 @@
 const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const { createToken } = require('./token_controll');
 
 exports.register = async (req, res) => {
     const { email, password, userName, favoriteDrink, favoriteFood, livingCountry } = req.body;
@@ -42,8 +42,7 @@ exports.login = async (req, res) => {
         if (!isMatch) return res.status(400).json({ error: 'Invalid credentials' });
 
         // Create a JWT
-        //TODO diff sign and varified
-        const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        const token = createToken(user);
 
         res.status(200).json({ token , userId: user.id });
     } catch (error) {
