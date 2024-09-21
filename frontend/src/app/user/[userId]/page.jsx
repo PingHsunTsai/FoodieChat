@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Box, Button, List, ListItem, ListItemText, TextField, Typography, IconButton, ListItemAvatar, Avatar } from '@mui/material';
 import CommentIcon from '@mui/icons-material/Comment';
@@ -14,10 +14,15 @@ export const handleLogout = (router) => {
 export default function UserPage() {
 
     const router = useRouter();
-    const [error, setError] = useState('');
+    const [token, setToken] = useState(null);
+    const [headers, setHeaders] = useState(null);
     const [loggedInUser, setLoggedInUser] = useState(null);
     const [friends, setFriends] = useState([]);
     const [selectedFriend, setSelectedFriend] = useState(null);
+
+    const [messages, setMessages] = useState([]);
+    const [newMessage, setNewMessage] = useState('');
+    // const eventSourceRef = useRef(null);
 
     useEffect(() => {
         async function fetchData() {
@@ -27,8 +32,9 @@ export default function UserPage() {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`,
                 };
+                setToken(token);
+                setHeaders(headers);
     
-                // Run both requests in parallel
                 const [userRes, friendsRes] = await Promise.all([
                     fetch('/api/getUser', { method: 'GET', headers }),
                     fetch('/api/getFriends', { method: 'GET', headers }),
@@ -44,7 +50,6 @@ export default function UserPage() {
                     throw new Error(friendsData.error || 'An error occurred while fetching friends');
                 }
     
-                // Set both user and friends data
                 setLoggedInUser({
                     id: userData.data.user.id,
                     name: userData.data.user.userName,
@@ -52,10 +57,29 @@ export default function UserPage() {
                 });
                 setFriends(friendsData.data.friends);
                 
-                console.log('User fetched successfully:', userData.message);
-                console.log('Friends fetched successfully:', friendsData.message);
+                // Start SSE for receiving messages
+                //TODO: cookie token
+                const eventSource = new EventSource(
+                    `/api/streamMsg?userId=${userData.data.user.id}?token=${token}`, 
+                    { method: 'GET', headers }
+                );
+
+                eventSource.onmessage = (event) => {
+                    const newMessage = JSON.parse(event.data);
+                    setMessages((prevMessages) => [...prevMessages, newMessage]);
+                };
+
+                eventSource.onerror = () => {
+                    console.error('Error in SSE connection');
+                    eventSource.close();
+                };
+
+                return () => {
+                    eventSource.close();
+                    console.log('SSE connection closed');
+                };
             } catch (error) {
-                setError(error.message || 'An error occurred');
+                console.log(error.message || 'An error occurred');
             }
         }
 
@@ -70,7 +94,25 @@ export default function UserPage() {
         setSelectedFriend(friend);
         // Fetch chat history or other info related to this friend
     };
-    console.log(friends);
+
+    const sendMessage = async () => {
+        if (!newMessage.trim()) return;
+
+        const res = await fetch('/api/sendMsg', {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({
+                senderId: loggedInUser.id,
+                receiverId: selectedFriend.id,
+                content: newMessage,
+            }),
+        });
+
+        const message = await res.json();
+        setMessages((prev) => [...prev, message]);
+        setNewMessage('');
+    };
+
     return (
         <Box sx={{ display: 'flex', height: '100vh' }}>
             <Box 
@@ -180,16 +222,36 @@ export default function UserPage() {
                                 {selectedFriend.email}
                             </Typography>
                             {/* Chat Box */}
-                            <Box sx={{ flexGrow: 1, height:350, border: '1px solid #ddd', padding: '16px', overflowY: 'auto' }}>
-                                <p>Chat history or messages go here...</p>
+                            <Box 
+                                sx={{ 
+                                    flexGrow: 1, 
+                                    height:350, 
+                                    border: '1px solid #ddd', 
+                                    padding: '16px', 
+                                    overflowY: 'auto' 
+                                }}
+                            >
+                                <List>
+                                    {messages.map((msg, index) => (
+                                        <ListItem key={index}>
+                                            <ListItemText
+                                                primary={msg.senderId === loggedInUser.id? 'You' : 'Friend'}
+                                                secondary={msg.content}
+                                            />
+                                        </ListItem>
+                                    ))}
+                                </List>
+                                {/* <p>Chat history or messages go here...</p> */}
                             </Box>
                             <Box sx={{ marginTop: '16px' }}>
                                 <TextField
                                     id="outlined-multiline-static"
                                     multiline
                                     maxRows={4}
-                                    label="Send msg here!"
                                     fullWidth
+                                    label="Send msg here!"
+                                    value={newMessage}
+                                    onChange={(e) => setNewMessage(e.target.value)}
                                     InputLabelProps={{
                                         sx: {
                                           color: '#fff', // Default label color
@@ -210,7 +272,13 @@ export default function UserPage() {
                                         },
                                     }}
                                 />
-                                <Button variant="contained" color="primary" fullWidth sx={{ marginTop: '8px' }}>
+                                <Button 
+                                    variant="contained" 
+                                    color="primary" 
+                                    fullWidth 
+                                    sx={{ marginTop: '8px' }}
+                                    onClick={sendMessage}
+                                >
                                     Send Message
                                 </Button>
                             </Box>
