@@ -1,11 +1,9 @@
 'use client';
-
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Box, Button, List, ListItem, ListItemText, TextField, Typography, IconButton, ListItemAvatar, Avatar } from '@mui/material';
 import CommentIcon from '@mui/icons-material/Comment';
 import SearchIcon from '@mui/icons-material/Search';
-import { ConstructionOutlined } from '@mui/icons-material';
 
 export const handleLogout = (router) => {
     localStorage.removeItem('token');
@@ -15,6 +13,7 @@ export const handleLogout = (router) => {
 export default function UserPage() {
 
     const router = useRouter();
+    const messagesEndRef = useRef(null);
     const [token, setToken] = useState(null);
     const [headers, setHeaders] = useState(null);
     const [loggedInUser, setLoggedInUser] = useState(null);
@@ -70,29 +69,33 @@ export default function UserPage() {
     useEffect(() => {
         //TODO: cookie token
         if (!selectedReceiver || !loggedInUser) {
-        return;
+            return;
         }
-        console.log('selectedReceiver', selectedReceiver.id);
         const eventSource = new EventSource(
-        `/api/streamMsg/?userId=${loggedInUser.id}&receiverId=${selectedReceiver.id}&token=${token}`, 
-        { method: 'GET', headers }
+            `/api/streamMsg/?userId=${loggedInUser.id}&receiverId=${selectedReceiver.id}&token=${token}`, 
+            { method: 'GET', headers }
         );
-
         eventSource.onmessage = (event) => {
-        const newMessage = JSON.parse(event.data);
-        setMessages((prevMessages) => [...prevMessages, newMessage]);
+            const conversation = JSON.parse(event.data);
+            setMessages(conversation);
         };
 
         eventSource.onerror = () => {
-        console.error('Error in SSE connection');
-        eventSource.close();
+            console.error('Error in SSE connection');
+            eventSource.close();
         };
 
         return () => {
-        eventSource.close();
-        console.log('SSE connection closed');
+            eventSource.close();
+            console.log('SSE connection closed');
         };
-    }, [selectedReceiver, loggedInUser, headers]);  // Re-run if receiver, user, or headers change
+    }, [selectedReceiver, loggedInUser, headers, newMessage]);  // Re-run if receiver, user, or headers change
+
+    useEffect(() => {
+        if (messagesEndRef.current) {
+          messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, [messages]);
 
     const navExplore = () => {
         router.push(`/explore/${loggedInUser.id}`); 
@@ -106,13 +109,10 @@ export default function UserPage() {
             headers,
             body: JSON.stringify({
                 senderId: loggedInUser.id,
-                receiverId: selectedFriend.id,
+                receiverId: selectedReceiver.id,
                 content: newMessage,
             }),
         });
-
-        const message = await res.json();
-        setMessages((prev) => [...prev, message]);
         setNewMessage('');
     };
 
@@ -235,16 +235,34 @@ export default function UserPage() {
                                 }}
                             >
                                 <List>
-                                    {messages.map((msg, index) => (
-                                        <ListItem key={index}>
-                                            <ListItemText
-                                                primary={msg.senderId === loggedInUser.id? 'You' : 'Friend'}
-                                                secondary={msg.content}
-                                            />
-                                        </ListItem>
-                                    ))}
-                                </List>
-                                {/* <p>Chat history or messages go here...</p> */}
+                                    {messages.length === 0 ? (
+                                        <Typography variant="body2">No messages yet</Typography>
+                                    ) : (
+                                        messages.map((msg) => (
+                                            <ListItem>
+                                                <ListItemText    
+                                                    primary={
+                                                        <Typography 
+                                                            component="span" 
+                                                            variant="body3" 
+                                                        >
+                                                            {msg.senderId === loggedInUser.id ? 'You' : selectedReceiver.userName}
+                                                        </Typography>
+                                                    }
+                                                    secondary={
+                                                        <Typography 
+                                                            component="span" 
+                                                            variant="body1" 
+                                                        >
+                                                           --- {msg.content}
+                                                        </Typography>
+                                                    }
+                                                />
+                                            </ListItem>
+                                        ))
+                                    )}
+                                    <div ref={messagesEndRef} />
+                                </List> 
                             </Box>
                             <Box sx={{ marginTop: '16px' }}>
                                 <TextField
