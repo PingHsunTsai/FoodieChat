@@ -1,7 +1,8 @@
 const express = require('express');
 const cors = require('cors');
 const autoRoutes = require('./routes/auto_routes');
-const { connectDB, sequelize } = require('./config/db');
+const { connectDB } = require('./config/db');
+const { syncModels } = require('./models/index');
 
 const app = express();
 
@@ -10,12 +11,11 @@ app.use(express.json());
 
 connectDB();
 
-sequelize.sync()
-    .then(() => console.log('Database & tables created!'))
-    .catch((error) => {
-        console.log('Error creating tables:', error);
-    });
-
 app.use('/api', autoRoutes);
 
-app.listen(5000, () => console.log('Server running on port 5000'));
+app.listen(5000, async () => {
+    console.log('Server running on port 5000');
+    
+    // Sync all models and associations
+    await syncModels();
+});

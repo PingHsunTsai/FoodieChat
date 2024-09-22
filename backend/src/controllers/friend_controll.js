@@ -1,6 +1,5 @@
 const { Op } = require('sequelize');
-const Friend = require('../models/friend');
-const User = require('../models/User');
+const { Friend, User }  = require('../models');
 
 exports.addFriend = async (req, res) => {
     const { friendId } = req.body;

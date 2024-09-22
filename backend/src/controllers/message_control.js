@@ -1,4 +1,4 @@
-const Message  = require('../models/message');
+const Message  = require('../models');
 
 // Endpoint to send a message(post)
 exports.sendMsg = async (req, res) => {

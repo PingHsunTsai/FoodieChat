@@ -1,5 +1,5 @@
 const bcrypt = require('bcryptjs');
-const User = require('../models/User');
+const { User } = require('../models');
 const { createToken } = require('./token_controll');
 
 exports.register = async (req, res) => {
