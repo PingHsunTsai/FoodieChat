@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Box, Button, List, ListItem, ListItemText, TextField, Typography, IconButton, ListItemAvatar, Avatar } from '@mui/material';
 import CommentIcon from '@mui/icons-material/Comment';
 import SearchIcon from '@mui/icons-material/Search';
+import { ConstructionOutlined } from '@mui/icons-material';
 
 export const handleLogout = (router) => {
     localStorage.removeItem('token');
@@ -18,7 +19,7 @@ export default function UserPage() {
     const [headers, setHeaders] = useState(null);
     const [loggedInUser, setLoggedInUser] = useState(null);
     const [friends, setFriends] = useState([]);
-    const [selectedFriend, setSelectedFriend] = useState(null);
+    const [selectedReceiver, setSelectedReceiver] = useState(null);
 
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState('');
@@ -27,12 +28,12 @@ export default function UserPage() {
     useEffect(() => {
         async function fetchData() {
             try {
-                const token = localStorage.getItem('token');
+                const local_token = localStorage.getItem('token');
                 const headers = {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`,
+                    'Authorization': `Bearer ${local_token}`,
                 };
-                setToken(token);
+                setToken(local_token);
                 setHeaders(headers);
     
                 const [userRes, friendsRes] = await Promise.all([
@@ -56,28 +57,7 @@ export default function UserPage() {
                     email: userData.data.user.email,
                 });
                 setFriends(friendsData.data.friends);
-                
-                // Start SSE for receiving messages
-                //TODO: cookie token
-                const eventSource = new EventSource(
-                    `/api/streamMsg?userId=${userData.data.user.id}?token=${token}`, 
-                    { method: 'GET', headers }
-                );
 
-                eventSource.onmessage = (event) => {
-                    const newMessage = JSON.parse(event.data);
-                    setMessages((prevMessages) => [...prevMessages, newMessage]);
-                };
-
-                eventSource.onerror = () => {
-                    console.error('Error in SSE connection');
-                    eventSource.close();
-                };
-
-                return () => {
-                    eventSource.close();
-                    console.log('SSE connection closed');
-                };
             } catch (error) {
                 console.log(error.message || 'An error occurred');
             }
@@ -86,14 +66,37 @@ export default function UserPage() {
         fetchData();
     }, []);
 
+    // Setup SSE when a receiver is selected
+    useEffect(() => {
+        //TODO: cookie token
+        if (!selectedReceiver || !loggedInUser) {
+        return;
+        }
+        console.log('selectedReceiver', selectedReceiver.id);
+        const eventSource = new EventSource(
+        `/api/streamMsg/?userId=${loggedInUser.id}&receiverId=${selectedReceiver.id}&token=${token}`, 
+        { method: 'GET', headers }
+        );
+
+        eventSource.onmessage = (event) => {
+        const newMessage = JSON.parse(event.data);
+        setMessages((prevMessages) => [...prevMessages, newMessage]);
+        };
+
+        eventSource.onerror = () => {
+        console.error('Error in SSE connection');
+        eventSource.close();
+        };
+
+        return () => {
+        eventSource.close();
+        console.log('SSE connection closed');
+        };
+    }, [selectedReceiver, loggedInUser, headers]);  // Re-run if receiver, user, or headers change
+
     const navExplore = () => {
         router.push(`/explore/${loggedInUser.id}`); 
     }
-
-    const selectFriend = (friend) => {
-        setSelectedFriend(friend);
-        // Fetch chat history or other info related to this friend
-    };
 
     const sendMessage = async () => {
         if (!newMessage.trim()) return;
@@ -177,7 +180,7 @@ export default function UserPage() {
                                         edge="end" 
                                         aria-label="comments" 
                                         color='info' 
-                                        onClick={() => selectFriend(item.friend)}
+                                        onClick={() => setSelectedReceiver(item.friend)}
                                     >
                                         <CommentIcon />
                                     </IconButton>
@@ -213,13 +216,13 @@ export default function UserPage() {
                         borderRadius: 5,
                     }}
                 >
-                    {selectedFriend ? (
+                    {selectedReceiver ? (
                         <Box>
                             <Typography variant="h3" textAlign="center">
-                                {selectedFriend.userName}
+                                {selectedReceiver.userName}
                             </Typography>
                             <Typography variant="h5" textAlign="center">
-                                {selectedFriend.email}
+                                {selectedReceiver.email}
                             </Typography>
                             {/* Chat Box */}
                             <Box 

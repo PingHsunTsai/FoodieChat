@@ -3,7 +3,10 @@ export async function GET(req) {
     const backendUrl = process.env.BACKEND_API_URL;
     const { method, headers } = req;
     const { searchParams } = new URL(req.url);
+
     const userId = searchParams.get('userId');
+    const receiverId = searchParams.get('receiverId');
+    const token = searchParams.get('token');
 
     const options = {
         method,
@@ -13,9 +16,9 @@ export async function GET(req) {
     try {
         //setup token
         const response = await fetch(
-            `${backendUrl}/api/streamMsg/${userId}`,
+            `${backendUrl}/api/streamMsg/${userId}?receiverId=${receiverId}&token=${token}`,
              options); 
-  
+        console.log(response);
         return new Response(response.body, {
             headers: {
                 'Content-Type': 'text/event-stream',
