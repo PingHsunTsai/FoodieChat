@@ -49,15 +49,16 @@ const findConversationByParticipants = async (participants) => {
 };
 
 exports.sendMsg = async (req, res) => {
-    const { senderId, receiverId, content } = req.body;
-    const participants = [senderId, receiverId];
+    const { senderId, conversationId, content } = req.body;
+    // const participants = [senderId, receiverId];
 
     try {
-        const conversation = await findOrCreateConversation(senderId, participants);
+        //TODO: remove receiverId give directly the conversationId
+        // const conversation = await findOrCreateConversation(senderId, participants);
 
         const newMessage = await Message.create({ 
             senderId, 
-            conversationId: conversation.id,
+            conversationId: conversationId,
             content 
         });
         res.status(201).json(newMessage);
@@ -89,7 +90,12 @@ exports.streamMsg = async (req, res) => {
         order: [['createdAt', 'ASC']] // Send messages in ascending order of creation time
     });
 
-    res.write(`data: ${JSON.stringify(allMessages)}\n\n`);
+    const responseData = {
+        conversationId: conversation.id,
+        msg: allMessages,
+    };
+
+    res.write(`data: ${JSON.stringify(responseData)}\n\n`);
     let lastMessageId = allMessages.length > 0 ? allMessages[allMessages.length - 1].id : null;
 
     const messageCheckInterval = setInterval(async () => {
@@ -100,7 +106,8 @@ exports.streamMsg = async (req, res) => {
 
         if (updatedMessages.length > 0 && updatedMessages[updatedMessages.length - 1].id !== lastMessageId) {
             lastMessageId = updatedMessages[updatedMessages.length - 1].id;
-            res.write(`data: ${JSON.stringify(updatedMessages)}\n\n`);
+            responseData.msg = updatedMessages;
+            res.write(`data: ${JSON.stringify(responseData)}\n\n`);
         }
     }, 1000);
 

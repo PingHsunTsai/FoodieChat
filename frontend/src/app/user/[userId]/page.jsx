@@ -19,6 +19,7 @@ export default function UserPage() {
     const [loggedInUser, setLoggedInUser] = useState(null);
     const [friends, setFriends] = useState([]);
     const [selectedReceiver, setSelectedReceiver] = useState(null);
+    const [conversationId, setConversationId] = useState(null);
 
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState('');
@@ -77,7 +78,8 @@ export default function UserPage() {
         );
         eventSource.onmessage = (event) => {
             const conversation = JSON.parse(event.data);
-            setMessages(conversation);
+            setConversationId(conversation.conversationId);
+            setMessages(conversation.msg);
         };
 
         eventSource.onerror = () => {
@@ -109,7 +111,7 @@ export default function UserPage() {
             headers,
             body: JSON.stringify({
                 senderId: loggedInUser.id,
-                receiverId: selectedReceiver.id,
+                conversationId: conversationId,
                 content: newMessage,
             }),
         });
