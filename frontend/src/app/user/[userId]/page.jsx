@@ -5,8 +5,14 @@ import { Box, Button, List, ListItem, ListItemText, TextField, Typography, IconB
 import CommentIcon from '@mui/icons-material/Comment';
 import SearchIcon from '@mui/icons-material/Search';
 
-export const handleLogout = (router) => {
-    localStorage.removeItem('token');
+export const handleLogout = async  (router) => {
+    const res = await fetch('/api/logout', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    });
+    console.log('Logout:', res.message);
     router.push('/auth/login');
 };
 
@@ -63,7 +69,6 @@ export default function UserPage() {
 
     // Setup SSE when a receiver is selected
     useEffect(() => {
-        //TODO: cookie token
         if (!selectedReceiver || !loggedInUser) {
             return;
         }

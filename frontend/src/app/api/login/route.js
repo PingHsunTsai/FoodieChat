@@ -29,7 +29,7 @@ export async function POST(req) {
             );
         }
 
-        const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+        const expiresAt = new Date(Date.now() + 1 * 60 * 60 * 1000)
         cookies().set('session', data.token, {
             httpOnly: true,
             secure: true,
