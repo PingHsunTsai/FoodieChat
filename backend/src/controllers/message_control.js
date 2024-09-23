@@ -1,8 +1,7 @@
 const { Op } = require('sequelize');
 const { Message, User, Conversation }  = require('../models');
+const { messageEventEmitter } = require('./even_control');
 
-
-// Find or Create a Conversation
 const findOrCreateConversation = async (userId, participants) => {
 
     try {
@@ -50,17 +49,15 @@ const findConversationByParticipants = async (participants) => {
 
 exports.sendMsg = async (req, res) => {
     const { senderId, conversationId, content } = req.body;
-    // const participants = [senderId, receiverId];
 
     try {
-        //TODO: remove receiverId give directly the conversationId
-        // const conversation = await findOrCreateConversation(senderId, participants);
-
         const newMessage = await Message.create({ 
             senderId, 
             conversationId: conversationId,
             content 
         });
+
+        messageEventEmitter.emit('newMessage', newMessage);
         res.status(201).json(newMessage);
     } catch (error) {
         res.status(500).json({ error: 'Failed to send message' });
@@ -70,7 +67,7 @@ exports.sendMsg = async (req, res) => {
 // Endpoint for real-time chat using SSE(get)
 exports.streamMsg = async (req, res) => {
     const { userId } = req.params;
-    const { receiverId, token } = req.query;
+    const { receiverId } = req.query;
     const parsedUserId = parseInt(userId);
     const parsedReceiverId = parseInt(receiverId);
     const participants = [parsedUserId, parsedReceiverId];
@@ -96,23 +93,22 @@ exports.streamMsg = async (req, res) => {
     };
 
     res.write(`data: ${JSON.stringify(responseData)}\n\n`);
-    let lastMessageId = allMessages.length > 0 ? allMessages[allMessages.length - 1].id : null;
 
-    const messageCheckInterval = setInterval(async () => {
-        const updatedMessages = await Message.findAll({
-            where: { conversationId: conversation.id },
-            order: [['createdAt', 'ASC']]
-        });
-
-        if (updatedMessages.length > 0 && updatedMessages[updatedMessages.length - 1].id !== lastMessageId) {
-            lastMessageId = updatedMessages[updatedMessages.length - 1].id;
+    // Listen for new messages via EventEmitter
+    const messageListener = async (newMessage) => {
+        if (newMessage.conversationId === conversation.id) {
+            const updatedMessages = await Message.findAll({
+                where: { conversationId: conversation.id },
+                order: [['createdAt', 'ASC']]
+            });
             responseData.msg = updatedMessages;
             res.write(`data: ${JSON.stringify(responseData)}\n\n`);
         }
-    }, 1000);
+    };
+    messageEventEmitter.on('newMessage', messageListener);
 
     req.on('close', () => {
-        clearInterval(messageCheckInterval);
+        messageEventEmitter.removeListener('newMessage', messageListener); 
         res.end();
     });
 };
