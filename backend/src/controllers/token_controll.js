@@ -14,8 +14,8 @@ exports.createToken = (user) =>{
 
 exports.authenticateToken = (req, res, next) => {
     const publicKey = fs.readFileSync(path.join(process.env.JWT_PUBLIC_KEY));
-    const token = req.headers['authorization'];
-    
+    const token = `Bearer ${req.headers.cookie.split('=')[1]}`;
+
     if (!token) return res.status(403).json({ error: 'No token provided' });
 
     jwt.verify(

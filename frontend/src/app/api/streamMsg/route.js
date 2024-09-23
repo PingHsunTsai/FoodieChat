@@ -6,7 +6,6 @@ export async function GET(req) {
 
     const userId = searchParams.get('userId');
     const receiverId = searchParams.get('receiverId');
-    const token = searchParams.get('token');
 
     const options = {
         method,
@@ -14,11 +13,10 @@ export async function GET(req) {
     };
 
     try {
-        //setup token
         const response = await fetch(
-            `${backendUrl}/api/streamMsg/${userId}?receiverId=${receiverId}&token=${token}`,
+            `${backendUrl}/api/streamMsg/${userId}?receiverId=${receiverId}`,
              options); 
-        console.log(response);
+
         return new Response(response.body, {
             headers: {
                 'Content-Type': 'text/event-stream',

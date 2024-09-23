@@ -12,7 +12,7 @@ router.get('/getUser', authenticateToken, controllers.getUser);
 router.get('/getFriends', authenticateToken, controllers.getFriends);
 router.get('/getStrangers', authenticateToken, controllers.getStrangers);
 
-router.get('/streamMsg/:userId', controllers.streamMsg);
+router.get('/streamMsg/:userId', authenticateToken, controllers.streamMsg);
 router.post('/sendMsg', authenticateToken, controllers.sendMsg);
 
 module.exports = router;

@@ -28,7 +28,6 @@ export default function Login() {
     if (!resData.success) {
       setError(resData.error || 'An register error occurred');
     } else {
-      localStorage.setItem('token', resData.data.token);
       router.push(`/user/${resData.data.userId}`); 
       console.log('Success:', resData.message);
     }

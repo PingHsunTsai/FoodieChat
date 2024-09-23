@@ -14,7 +14,6 @@ export default function UserPage() {
 
     const router = useRouter();
     const messagesEndRef = useRef(null);
-    const [token, setToken] = useState(null);
     const [headers, setHeaders] = useState(null);
     const [loggedInUser, setLoggedInUser] = useState(null);
     const [friends, setFriends] = useState([]);
@@ -23,17 +22,13 @@ export default function UserPage() {
 
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState('');
-    // const eventSourceRef = useRef(null);
 
     useEffect(() => {
         async function fetchData() {
             try {
-                const local_token = localStorage.getItem('token');
                 const headers = {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${local_token}`,
                 };
-                setToken(local_token);
                 setHeaders(headers);
     
                 const [userRes, friendsRes] = await Promise.all([
@@ -73,7 +68,7 @@ export default function UserPage() {
             return;
         }
         const eventSource = new EventSource(
-            `/api/streamMsg/?userId=${loggedInUser.id}&receiverId=${selectedReceiver.id}&token=${token}`, 
+            `/api/streamMsg/?userId=${loggedInUser.id}&receiverId=${selectedReceiver.id}`, 
             { method: 'GET', headers }
         );
         eventSource.onmessage = (event) => {

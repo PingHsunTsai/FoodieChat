@@ -9,7 +9,6 @@ import SearchIcon from '@mui/icons-material/Search';
 
 export default function ThreeRowsLayout() {
 
-    const token = localStorage.getItem('token');
     const router = useRouter();
     const [searchQuery, setSearchQuery] = useState('');
     const [strangers, setStrangers] = useState([]);
@@ -24,7 +23,6 @@ export default function ThreeRowsLayout() {
 
             const headers = {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`,
             };
 
             const strangerRes = await fetch('/api/getStrangers', { method: 'GET', headers })
@@ -46,7 +44,6 @@ export default function ThreeRowsLayout() {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`,
             },
             body: JSON.stringify({
               friendId,
