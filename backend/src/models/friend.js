@@ -13,7 +13,4 @@ const Friend = sequelize.define('Friend', {
     },
 });
 
-// Each friendId references a User
-Friend.belongsTo(User, { foreignKey: 'friendId', as: 'friend' });
-
 module.exports = Friend;

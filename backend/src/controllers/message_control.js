@@ -94,7 +94,7 @@ exports.streamMsg = async (req, res) => {
 
     res.write(`data: ${JSON.stringify(responseData)}\n\n`);
 
-    // Listen for new messages via EventEmitter
+    // Listen for new messages via EventEmitter with id check to avoid unnecessary updates
     const messageListener = async (newMessage) => {
         if (newMessage.conversationId === conversation.id) {
             const updatedMessages = await Message.findAll({

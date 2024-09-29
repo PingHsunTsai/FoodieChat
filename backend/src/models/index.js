@@ -5,6 +5,8 @@ const Friend = require('./friend');
 const Conversation = require('./conversation');
 const ConversationUsers = require('./conversationUsers');
 
+Friend.belongsTo(User, { foreignKey: 'friendId', as: 'friend' });
+
 // Define the relationships between models here
 Conversation.belongsToMany(User, {
      through: ConversationUsers, 
