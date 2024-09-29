@@ -91,7 +91,7 @@ export default function UserPage() {
             eventSource.close();
             console.log('SSE connection closed');
         };
-    }, [selectedReceiver, loggedInUser, headers, newMessage]);  // Re-run if receiver, user, or headers change
+    }, [selectedReceiver, loggedInUser, newMessage]);  // Re-run if [...] change
 
     useEffect(() => {
         if (messagesEndRef.current) {
