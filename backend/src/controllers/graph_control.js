@@ -246,4 +246,6 @@ class Graph {
 }
 
 const graphInstance = new Graph();
+setInterval(graphInstance.dumpGraph, 24 * 60 * 60 * 1000);
+ 
 module.exports = graphInstance;
