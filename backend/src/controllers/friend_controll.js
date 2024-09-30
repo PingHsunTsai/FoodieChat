@@ -1,4 +1,4 @@
-const { Op, Sequelize } = require('sequelize');
+const { Op } = require('sequelize');
 const { Friend, User }  = require('../models');
 const graphInstance = require('./graph_control');
 
