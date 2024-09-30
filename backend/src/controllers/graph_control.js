@@ -3,166 +3,211 @@ const path = require('path');
 const { Friend, User }  = require('../models');
 
 const INF = 2147483647;
-
+const FILEPATH = path.join(process.env.GRAPH_JSON_PATH, 'graph.json');
 class Graph {
-  constructor() {
-    this.adjList = new Map();
-    this.startUserIds = 2;
-    this.users = [];
-    this.userMap = new Map();
-    this.friends = [];
-    this.visitedFriends = new Map();
-  }
-
-  fetchData = async () => {
-    this.users = await User.findAll();
-    this.friends = await Friend.findAll({
-        include: [{ model: User, as: 'friend' }]
-    });
-
-    this.users.forEach(user => {
-        this.userMap.set(user.id, user);
-        this.visitedFriends.set(user.id, false);
-        this.addVertex(user.id);
-    });
-  }
-
-  updateGraph = async () => {
-    await this.fetchData();
-    this.friendGraph();
-
-    const dfsMap = this.dfs(this.startUserIds);
-    const dijkstrMap = Object.fromEntries(this.dijkstra(this.startUserIds));
-    const objAdjList = Object.fromEntries(this.adjList);
-
-    const outputGraph = {
-        adjList: objAdjList,
-        dijkstrMap: dijkstrMap,
-        dfsMap: dfsMap
-    };
-
-    return outputGraph;
-  }
-
-  friendGraph = () => {
-
-    this.friends.forEach((friend) => {
-        const user1 = this.userMap.get(friend.userId);
-        const user2 = this.userMap.get(friend.friendId);
-
-        if (user1 && user2) {
-            const weight = this.calculateWeight(user1, user2);
-            this.addEdge(friend.userId, friend.friendId, weight);
-        }
-    });
-    console.log('friendGraph updated successfully.');
-  };
-
-  strangersGraph = async () => {
-    console.error('Not Implemented Error');
-  };
-
-  calculateWeight = (user1, user2) => {
-    let weight = 4;
     
-    if (String(user1.favoriteFood) === String(user2.favoriteFood)) {
-        weight -= 1;
-    }
-    if (String(user1.favoriteDrink) === String(user2.favoriteDrink)) {
-        weight -= 1;
-    }
-    if (String(user1.livingCountry) === String(user2.livingCountry)) {
-        weight -= 1;
-    }
-
-    return weight;
-  };
-
-  addVertex = (v) => {
-    this.adjList.set(v, []);
-  }
-
-  addEdge = (v, w, weight) =>{
-    if (!this.adjList.has(v)) this.addVertex(v);
-    if (!this.adjList.has(w)) this.addVertex(w);
-
-    if (!this.adjList.get(v).find((neighbor) => neighbor.node === w)) {
-        this.adjList.get(v).push({ node: w, weight })
+    constructor() {
+        this._adjList = new Map();
+        this._startUserIds = 2;
+        this.users = [];
+        this.friends = [];
+        this.userMap = new Map();
+        this._dfsList = [];
+        this._dijkstraMap = new Map();
+        this._outputGraph = {};
+        this.loadGraph();
     };
-    if (!this.adjList.get(w).find((neighbor) => neighbor.node === v)) {
-        this.adjList.get(w).push({ node: v, weight })
+
+    get startUserIds() {
+        return this._startUserIds;
     };
-    console.log(`Added edge between ${v} and ${w} with weight ${weight}`);
-  }
 
-  dijkstra = (start) => {
-    //bfs with weight
-    const dist = new Map();
-    const visited = new Map();
-    var queue = [];
+    set startUserIds(value) {
+        this._startUserIds = value;
+        this.updateStatistics();
+    };
 
-    this.adjList.forEach((_, key) => {
-      dist.set(key, INF);
-      visited.set(key, false);
-    });
+    get afsList() {
+        return this._dfsList;
+    };
 
-    dist.set(start, 0);
-    queue.push(start);
+    set afsList(value) {
+        this._dfsList = value;
+    };
 
-    while (queue.length != 0) {
-      const u = queue.shift();
+    get dijkstraMap() {
+        return this._dijkstraMap;
+    };
 
-      if (visited.get(u)) continue;
-      visited.set(u, true);
+    set dijkstraMap(value) {
+        this._dijkstraMap = value;
+    };
 
-      this.adjList.get(u).forEach((neighbor) => {
-        const { node: v, weight } = neighbor;
-        if (dist.get(v) > dist.get(u) + weight) {
-          dist.set(v, dist.get(u) + weight);
-          queue.push(v);
+    fetchData = async () => {
+        this.users = await User.findAll();
+        this.friends = await Friend.findAll({
+            include: [{ model: User, as: 'friend' }]
+        });
+
+        this.users.forEach(user => {
+            this.userMap.set(user.id, user);
+            this.addVertex(user.id);
+        });
+
+        this.updateFriendRelation();
+    };
+
+    updateStatistics = async () => {
+
+        const dfsMap = this.dfs(this.startUserIds);
+        const dijkstrMap = Object.fromEntries(this.dijkstra(this.startUserIds));
+        const objAdjList = Object.fromEntries(this._adjList);
+
+        this._outputGraph = {
+            adjList: objAdjList,
+            dijkstrMap: dijkstrMap,
+            dfsMap: dfsMap
+        };
+    };
+
+    updateFriendRelation = () => {
+
+        this.friends.forEach((friend) => {
+            const user1 = this.userMap.get(friend.userId);
+            const user2 = this.userMap.get(friend.friendId);
+
+            if (user1 && user2) {
+                const weight = this.calculateWeight(user1, user2);
+                this.addEdge(friend.userId, friend.friendId, weight);
+            }
+        });
+        console.log('friendGraph updated successfully.');
+    };
+
+    strangersGraph = async () => {
+        console.error('Not Implemented Error');
+    };
+
+    calculateWeight = (user1, user2) => {
+        let weight = 4;
+        
+        if (String(user1.favoriteFood) === String(user2.favoriteFood)) {
+            weight -= 1;
         }
-      });
-    }
-
-    return dist;
-  }
-
-  dfs = (start) => {
-    
-    const dfsMap = [];
-
-    function dfsRec(adjList, start, visited) {
-      visited.set(start, true);
-      console.log('dfs',start);
-      dfsMap.push(start);
-
-      adjList.get(start).forEach((neighbor) => {
-        if (!visited.get(neighbor.node)) {
-          dfsRec(adjList, neighbor.node, visited);
+        if (String(user1.favoriteDrink) === String(user2.favoriteDrink)) {
+            weight -= 1;
         }
-      });
-    }
-
-    const visited = new Map();
-    this.adjList.forEach((_, key) => visited.set(key, false));
-    dfsRec(this.adjList, start, visited);
-
-    return dfsMap;
-  };
-
-  dumpGraph = async () => {
-    const filePath = path.join(process.env.GRAPH_JSON_PATH, 'graph.json');
-
-    const outputGraph = await this.updateGraph();
-
-    fs.writeFile(filePath, JSON.stringify(outputGraph, null, 2), (err) => {
-        if (err) {
-            console.error('Error writing statistics file:', err);
-        } else {
-            console.log('Graph statistics written to', filePath);
+        if (String(user1.livingCountry) === String(user2.livingCountry)) {
+            weight -= 1;
         }
-    });
-  }
+
+        return weight;
+    };
+
+    addVertex = (v) => {
+        this._adjList.set(v, []);
+    };
+
+    addEdge = (v, w, weight) =>{
+        if (!this._adjList.has(v)) this.addVertex(v);
+        if (!this._adjList.has(w)) this.addVertex(w);
+
+        if (!this._adjList.get(v).find((neighbor) => neighbor.node === w)) {
+            this._adjList.get(v).push({ node: w, weight })
+        };
+        if (!this._adjList.get(w).find((neighbor) => neighbor.node === v)) {
+            this._adjList.get(w).push({ node: v, weight })
+        };
+        console.log(`Added edge between ${v} and ${w} with weight ${weight}`);
+    };
+
+    dijkstra = (start) => {
+        //bfs with weight
+        const dist = new Map();
+        const visited = new Map();
+        var queue = [];
+
+        this._adjList.forEach((_, key) => {
+            dist.set(key, INF);
+            visited.set(key, false);
+        });
+
+        dist.set(start, 0);
+        queue.push(start);
+
+        while (queue.length != 0) {
+            const u = queue.shift();
+
+            if (visited.get(u)) continue;
+            visited.set(u, true);
+
+            this._adjList.get(u).forEach((neighbor) => {
+                const { node: v, weight } = neighbor;
+                if (dist.get(v) > dist.get(u) + weight) {
+                    dist.set(v, dist.get(u) + weight);
+                    queue.push(v);
+                }
+            });
+        }
+
+        this.dijkstraMap = dist;
+        return dist;
+    };
+
+    dfs = (start) => {
+        
+        const dfsMap = [];
+
+        function dfsRec(adjList, start, visited) {
+            visited.set(start, true);
+            dfsMap.push(start);
+
+            adjList.get(start).forEach((neighbor) => {
+                if (!visited.get(neighbor.node)) {
+                    dfsRec(adjList, neighbor.node, visited);
+                }
+            });
+        }
+
+        const visited = new Map();
+        this._adjList.forEach((_, key) => visited.set(key, false));
+        dfsRec(this._adjList, start, visited);
+        
+        this.dfsList = dfsMap;
+        return dfsMap;
+    };
+
+    dumpGraph = async () => {
+        await this.updateStatistics();
+
+        fs.writeFile(FILEPATH, JSON.stringify(this._outputGraph, null, 2), (err) => {
+            if (err) {
+                console.error('Error writing statistics file:', err);
+            } else {
+                console.log('Graph statistics written to', FILEPATH);
+            }
+        });
+    };
+
+    loadGraph = async () => {
+        try {
+            const data = fs.readFileSync(FILEPATH, 'utf-8');
+            const parsedData = JSON.parse(data);
+
+            // Rebuild adjList
+            this._adjList = new Map( 
+                Object.entries(parsedData.adjList).map(([key, value]) => [parseInt(key), value])
+            );
+            console.log('adjList', this._adjList);
+
+            this.dijkstraMap = new Map(Object.entries(parsedData.dijkstrMap));
+            this.dfsList = parsedData.dfsMap;
+
+        } catch (err) {
+            console.error('Error loading graph from file:', err);
+            return null;
+        }
+    };
 }
 
 module.exports = { Graph };
