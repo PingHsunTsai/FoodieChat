@@ -1,6 +1,7 @@
 const bcrypt = require('bcryptjs');
 const { User } = require('../models');
 const { createToken } = require('./token_controll');
+const graphInstance = require('./graph_control');
 
 exports.register = async (req, res) => {
     const { email, password, userName, favoriteDrink, favoriteFood, livingCountry } = req.body;
@@ -21,6 +22,7 @@ exports.register = async (req, res) => {
             livingCountry
         });
 
+        await graphInstance.addUser(newUser.id);
         res.status(201).json({ message: 'User registered successfully', user: newUser });
     } catch (error) {
         console.error('Registration error:', error);

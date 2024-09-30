@@ -1,5 +1,6 @@
 const { Op } = require('sequelize');
 const { Friend, User }  = require('../models');
+const graphInstance = require('./graph_control');
 
 exports.addFriend = async (req, res) => {
     const { friendId } = req.body;
@@ -8,6 +9,8 @@ exports.addFriend = async (req, res) => {
             userId: req.user.id,
             friendId,
         });
+
+        await graphInstance.addFriend(req.user.id, friendId);
         res.status(201).json({ message: 'Friend added', friend });
     } catch (error) {
         res.status(500).json({ error: 'Failed to add friend' });

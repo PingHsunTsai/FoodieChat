@@ -20,7 +20,7 @@ class Graph {
         this._dfsList = [];
         this._dijkstraMap = new Map();
         this._outputGraph = {};
-        this.loadGraph();
+        this.fetchData();
 
         Graph.instance = this;
 
@@ -66,6 +66,7 @@ class Graph {
         });
 
         this.updateFriendRelation();
+        await this.updateStatistics();
     }
 
     async updateStatistics() {
@@ -107,6 +108,17 @@ class Graph {
         }
     
         return weight;
+    }
+
+    async addUser(userId) {
+        this.addVertex(userId);
+        await this.dumpGraph();
+    }
+
+    async addFriend(userId, friendId) {
+        const weight = this.calculateWeight(userId, friendId);
+        this.addEdge(userId, friendId, weight);
+        await this.dumpGraph();
     }
 
     addVertex(v) {
