@@ -3,7 +3,7 @@ const cors = require('cors');
 const autoRoutes = require('./routes/auto_routes');
 const { connectDB } = require('./config/db');
 const { syncModels } = require('./models/index');
-const { Graph } = require('./controllers');
+const graphInstance = require('./controllers/graph_control');
 
 const app = express();
 
@@ -20,6 +20,5 @@ app.listen(5000, async () => {
     // Sync all models and associations
     await syncModels();
 
-    const graphInstance = new Graph();
-    graphInstance.dumpGraph();
+    await graphInstance.dumpGraph();
 });
