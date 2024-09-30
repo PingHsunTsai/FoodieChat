@@ -18,7 +18,7 @@ class Graph {
         this.friends = [];
         this.userMap = new Map();
         this._dfsList = [];
-        this._dijkstraMap = new Map();
+        this._dijkstraList = [];
         this._outputGraph = {};
         this.fetchData();
 
@@ -43,12 +43,12 @@ class Graph {
         this._dfsList = value;
     };
 
-    get dijkstraMap() {
-        return this._dijkstraMap;
+    get dijkstraList() {
+        return this._dijkstraList;
     };
 
-    set dijkstraMap(value) {
-        this._dijkstraMap = value;
+    set dijkstraList(value) {
+        this._dijkstraList = value;
     };
 
     async fetchData() {
@@ -70,14 +70,14 @@ class Graph {
     }
 
     async updateStatistics() {
-        const dfsMap = this.dfs(this.startUserIds);
-        const dijkstraMap = Object.fromEntries(this.dijkstra(this.startUserIds));
-        const objAdjList = Object.fromEntries(this._adjList);
+        const dfsList = this.dfs(this.startUserIds);
+        const dijkstraList = this.dijkstra(this.startUserIds);
+        const adjMap = Object.fromEntries(this._adjList);
 
         this._outputGraph = {
-            adjList: objAdjList,
-            dijkstraMap,
-            dfsMap,
+            adjMap,
+            dijkstraList,
+            dfsList,
         };
     }
 
@@ -140,8 +140,17 @@ class Graph {
         console.log(`Added edge between ${v} and ${w} with weight ${weight}`);
     }
 
+    sortMap(map) {
+        // Convert Map to array of [key, value] pairs
+        const sortedArray = Array.from(map)
+            .sort((a, b) => a[1] - b[1])
+            .map(([key, _]) => key); ;
+        return sortedArray;
+    }
+
     // Dijkstra's algorithm for shortest path
     dijkstra(start) {
+        
         const dist = new Map();
         const visited = new Map();
         const queue = [];
@@ -153,7 +162,9 @@ class Graph {
 
         dist.set(start, 0);
         queue.push(start);
-
+        
+        let removeId = [start];
+        let count = 0;
         while (queue.length !== 0) {
             const u = queue.shift();
 
@@ -162,15 +173,23 @@ class Graph {
 
             this._adjList.get(u).forEach((neighbor) => {
                 const { node: v, weight } = neighbor;
+                if (count === 0) { removeId.push(v) }
                 if (dist.get(v) > dist.get(u) + weight) {
                     dist.set(v, dist.get(u) + weight);
                     queue.push(v);
                 }
             });
-        }
 
-        this.dijkstraMap = dist;
-        return dist;
+            count++;
+        }
+        console.log('Remove Id:', removeId);
+        console.log('dist map:', dist);
+        
+        removeId.forEach((id) => {
+            dist.delete(id);
+        });
+        this.dijkstraList = this.sortMap(dist);
+        return this.dijkstraList;
     }
 
     // Depth-first search algorithm
@@ -193,7 +212,7 @@ class Graph {
         dfsRec(this._adjList, start, visited);
 
         this._dfsList = dfsMap;
-        return dfsMap;
+        return this._dfsList;
     }
 
 
@@ -215,11 +234,11 @@ class Graph {
           const parsedData = JSON.parse(data);
     
           this._adjList = new Map(
-            Object.entries(parsedData.adjList).map(([key, value]) => [parseInt(key), value])
+            Object.entries(parsedData.adjMap).map(([key, value]) => [parseInt(key), value])
           );
     
-          this._dijkstraMap = new Map(Object.entries(parsedData.dijkstraMap));
-          this._dfsList = parsedData.dfsMap;
+          this._dijkstraList = parsedData.dijkstraList;
+          this._dfsList = parsedData.dfsList;
         } catch (err) {
           console.error('Error loading graph from file:', err);
         }

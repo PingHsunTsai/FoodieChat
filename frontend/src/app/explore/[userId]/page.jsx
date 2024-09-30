@@ -12,6 +12,7 @@ export default function ThreeRowsLayout() {
     const router = useRouter();
     const [searchQuery, setSearchQuery] = useState('');
     const [strangers, setStrangers] = useState([]);
+    const [recommendations, setRecommendations] = useState([]);
     const [updateFlag, setUpdateFlag] = useState(false);
 
     const handleBack = () => {
@@ -24,16 +25,22 @@ export default function ThreeRowsLayout() {
             const headers = {
                 'Content-Type': 'application/json',
             };
-
-            const strangerRes = await fetch('/api/getStrangers', { method: 'GET', headers })
+            const [strangerRes, recommendationRes] = await Promise.all([
+              fetch('/api/getStrangers', { method: 'GET', headers }),
+              fetch('/api/getRecommendations', { method: 'GET', headers }),
+          ]);
             const strangerData = await strangerRes.json()
+            const recommendation = await recommendationRes.json()
             
             if (!strangerData.success) {
-                throw new Error(strangerData.error || 'An error occurred while fetching user');
+                throw new Error(strangerData.error || 'An error occurred while fetching stranger Data');
             }
-
+            if (!recommendation.success) {
+              throw new Error(recommendation.error || 'An error occurred while fetching recommendation Data');
+          }
+            console.log('recommendation.data):', recommendation.data);
             setStrangers(strangerData.data);
-            console.log('Stranger fetched successfully:', strangerData.message);
+            setRecommendations(recommendation.data);
         }
         fetchStrangers()
       }, [updateFlag])
@@ -108,20 +115,47 @@ export default function ThreeRowsLayout() {
         </Box>
         <Box
           sx={{
-            height: '20%', 
+            height: '42.5%', 
             paddingY: '16px',
             border: '4px solid white',
             borderRadius: 5,
+            overflowY: 'auto',
           }}
         >
-          <Typography variant="h4" textAlign="center">Optimize search</Typography>
+            <List dense={false}>
+                {recommendations.map((recommendation) => (
+                    <ListItem
+                        key={recommendation.id}
+                        secondaryAction={
+                            <IconButton 
+                                edge="end" 
+                                aria-label="add" 
+                                color='info' 
+                                onClick={() => handleAddFriend(recommendation.id)}
+                            >
+                                <AddIcon />
+                            </IconButton>
+                        }
+                    >
+                        <ListItemAvatar>
+                            <Avatar>
+                                <SearchIcon />
+                            </Avatar>
+                        </ListItemAvatar>
+                        <ListItemText
+                            primary={recommendation.userName}
+                        />
+                    </ListItem>
+                ))}
+            </List>
         </Box>
         <Box
           sx={{
-            height: '65%', 
+            height: '42.5%', 
             paddingY: '16px',
             border: '4px solid white',
             borderRadius: 5,
+            overflowY: 'auto', 
           }}
         >
             <List dense={false}>

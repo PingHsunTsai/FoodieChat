@@ -11,6 +11,7 @@ router.post('/addFriend', authenticateToken, controllers.addFriend);
 router.get('/getUser', authenticateToken, controllers.getUser);
 router.get('/getFriends', authenticateToken, controllers.getFriends);
 router.get('/getStrangers', authenticateToken, controllers.getStrangers);
+router.get('/getRecommendations', authenticateToken, controllers.getRecommendations);
 
 router.get('/streamMsg/:userId', authenticateToken, controllers.streamMsg);
 router.post('/sendMsg', authenticateToken, controllers.sendMsg);

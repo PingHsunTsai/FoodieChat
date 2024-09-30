@@ -1,4 +1,4 @@
-const { Op } = require('sequelize');
+const { Op, Sequelize } = require('sequelize');
 const { Friend, User }  = require('../models');
 const graphInstance = require('./graph_control');
 
@@ -65,5 +65,28 @@ exports.getStrangers = async (req, res) => {
     } catch (error) {
         console.error('Error fetching getStrangers:', error);
         res.status(500).json({ error: 'Failed to fetch getStrangers' });
+    }
+};
+
+exports.getRecommendations = async (req, res) => {
+    try{
+        const dijkstraList = graphInstance.dijkstra(req.user.id);
+        console.log('dijkstraList:', dijkstraList);
+        const Recommendations = await User.findAll({
+            where: {
+                id: {
+                    [Op.in]: dijkstraList,  
+                },
+            },
+            attributes: ['id', 'userName'],
+        });
+        // Sort the results according to dijkstraList order
+        const sortedRecommendations = dijkstraList.map(id => 
+            Recommendations.find(user => user.id === id)
+        );
+        res.status(200).json(sortedRecommendations);
+    } catch (error) {
+        console.error('Error fetching getRecommendations:', error);
+        res.status(500).json({ error: 'Failed to fetch recommendations' });
     }
 };
