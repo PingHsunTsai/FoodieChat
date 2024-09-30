@@ -3,6 +3,7 @@ const { register, login, getUser } = require('./user_controll');
 const { addFriend, getFriends, getStrangers, getRecommendations } = require('./friend_controll');
 const { sendMsg, streamMsg } = require('./message_control');
 const { messageEventEmitter } = require('./even_control');
+const { searchUsers } = require('./search_control');
 
 module.exports = { 
     createToken,
@@ -17,4 +18,5 @@ module.exports = {
     sendMsg,
     streamMsg,
     messageEventEmitter,
+    searchUsers,
 };

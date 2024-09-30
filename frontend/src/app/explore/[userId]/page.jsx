@@ -14,6 +14,8 @@ export default function ThreeRowsLayout() {
     const [strangers, setStrangers] = useState([]);
     const [recommendations, setRecommendations] = useState([]);
     const [updateFlag, setUpdateFlag] = useState(false);
+    const [results, setResults] = useState([]);
+    const [debouncedQuery, setDebouncedQuery] = useState('');
 
     const handleBack = () => {
         router.back();
@@ -67,8 +69,23 @@ export default function ThreeRowsLayout() {
         setUpdateFlag(prevFlag => !prevFlag);
     }
 
-    const handleSearch = async () => {
-        throw new Error('Not Implemented Error');
+    // Function to handle search input
+    const handleSearch = async (e) => {
+      setSearchQuery(e.target.value);
+
+      if (e.target.value.length > 1) {
+          const headers = {
+              'Content-Type': 'application/json',
+          };
+          console.log('searching for:', e.target.value);
+          const res = await fetch(`/api/searchUsers?q=${e.target.value}`, { method: 'GET', headers });
+          const data = await res.json();
+          if (data.success) {
+              setResults(data.data);
+          }
+        } else {
+            setResults([]);  // Clear results if the query is too short
+        }
     };
 
     return (
@@ -101,13 +118,12 @@ export default function ThreeRowsLayout() {
                     placeholder="Search Foodie"
                     inputProps={{ 'aria-label': 'Search Foodie' }}
                     value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onChange={handleSearch}
                 />
                 <IconButton 
                     type="button" 
                     sx={{ p: '10px' }} 
                     aria-label="search"
-                    onClick={handleSearch}
                 >
                     <SearchIcon />
                 </IconButton>
@@ -115,11 +131,47 @@ export default function ThreeRowsLayout() {
         </Box>
         <Box
           sx={{
-            height: '42.5%', 
+            height: '35%', 
             paddingY: '16px',
             border: '4px solid white',
             borderRadius: 5,
             overflowY: 'auto',
+          }}
+        >  
+            <List dense={false}>
+                {results.map((user) => (
+                    <ListItem
+                        key={user.id}
+                        secondaryAction={
+                            <IconButton 
+                                edge="end" 
+                                aria-label="add" 
+                                color='info' 
+                                onClick={() => handleAddFriend(user.id)}
+                            >
+                                <AddIcon />
+                            </IconButton>
+                        }
+                    >
+                        <ListItemAvatar>
+                            <Avatar>
+                                <SearchIcon />
+                            </Avatar>
+                        </ListItemAvatar>
+                        <ListItemText
+                            primary={user.userName}
+                        />
+                    </ListItem>
+                ))}
+            </List> 
+        </Box>
+        <Box
+          sx={{
+            height: '50%', 
+            paddingY: '16px',
+            border: '4px solid white',
+            borderRadius: 5,
+            overflowY: 'auto', 
           }}
         >
             <List dense={false}>
@@ -144,42 +196,6 @@ export default function ThreeRowsLayout() {
                         </ListItemAvatar>
                         <ListItemText
                             primary={recommendation.userName}
-                        />
-                    </ListItem>
-                ))}
-            </List>
-        </Box>
-        <Box
-          sx={{
-            height: '42.5%', 
-            paddingY: '16px',
-            border: '4px solid white',
-            borderRadius: 5,
-            overflowY: 'auto', 
-          }}
-        >
-            <List dense={false}>
-                {strangers.map((stranger) => (
-                    <ListItem
-                        key={stranger.id}
-                        secondaryAction={
-                            <IconButton 
-                                edge="end" 
-                                aria-label="add" 
-                                color='info' 
-                                onClick={() => handleAddFriend(stranger.id)}
-                            >
-                                <AddIcon />
-                            </IconButton>
-                        }
-                    >
-                        <ListItemAvatar>
-                            <Avatar>
-                                <SearchIcon />
-                            </Avatar>
-                        </ListItemAvatar>
-                        <ListItemText
-                            primary={stranger.userName}
                         />
                     </ListItem>
                 ))}

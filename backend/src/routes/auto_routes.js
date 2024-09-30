@@ -14,6 +14,7 @@ router.get('/getStrangers', authenticateToken, controllers.getStrangers);
 router.get('/getRecommendations', authenticateToken, controllers.getRecommendations);
 
 router.get('/streamMsg/:userId', authenticateToken, controllers.streamMsg);
+router.get('/searchUsers', authenticateToken, controllers.searchUsers);
 router.post('/sendMsg', authenticateToken, controllers.sendMsg);
 
 module.exports = router;
