@@ -53,10 +53,16 @@ class Graph {
 
     async fetchData() {
         const [users, friends] = await Promise.all([
-        User.findAll(),
+        User.findAll({
+            include: [{
+                model: Friend,
+                as: 'friends',
+                attributes: ['friendId'] ,
+            }]
+        }),
         Friend.findAll({ include: [{ model: User, as: 'friend' }] }),
         ]);
-
+        
         this.users = users;
         this.friends = friends;
 
@@ -152,7 +158,8 @@ class Graph {
 
     // Dijkstra's algorithm for shortest path
     dijkstra(start, k=5) {
-        
+        const start_user = this.userMap.get(start);
+        const friends = start_user.friends.map(friend => friend.friendId);
         const dist = new Map();
         const visited = new Map();
         const queue = [];
@@ -189,6 +196,8 @@ class Graph {
         }
 
         this.dijkstraList = this.sortMap(dist)
+            .filter((id) => !friends.includes(id) && id !== start)
+
         return this.dijkstraList;
     }
 
