@@ -61,8 +61,10 @@ class Graph {
         this.friends = friends;
 
         this.users.forEach(user => {
-        this.userMap.set(user.id, user);
-        this.addVertex(user.id);
+            // Add user to userMap to easily access user by id without searching
+            this.userMap.set(user.id, user);
+            // Add user to graph
+            this.addVertex(user.id);
         });
 
         this.updateFriendRelation();
@@ -149,7 +151,7 @@ class Graph {
     }
 
     // Dijkstra's algorithm for shortest path
-    dijkstra(start) {
+    dijkstra(start, k=5) {
         
         const dist = new Map();
         const visited = new Map();
@@ -161,34 +163,32 @@ class Graph {
         });
 
         dist.set(start, 0);
-        queue.push(start);
+        // priority queue
+        queue.push([0, start]);
         
-        let removeId = [start];
-        let count = 0;
         while (queue.length !== 0) {
-            const u = queue.shift();
+            let u = queue[0][1];
+            queue.shift();
 
             if (visited.get(u)) continue;
             visited.set(u, true);
 
             this._adjList.get(u).forEach((neighbor) => {
                 const { node: v, weight } = neighbor;
-                if (count === 0) { removeId.push(v) }
+                
                 if (dist.get(v) > dist.get(u) + weight) {
                     dist.set(v, dist.get(u) + weight);
-                    queue.push(v);
+                    queue.push([dist.get(v), v]);
+                    // sort value if value is same, sort by key
+                    queue.sort((a, b) =>{
+                        if(a[0] == b[0]) return a[1] - b[1];
+                        return a[0] - b[0];
+                    });
                 }
             });
-
-            count++;
         }
-        console.log('Remove Id:', removeId);
-        console.log('dist map:', dist);
-        
-        removeId.forEach((id) => {
-            dist.delete(id);
-        });
-        this.dijkstraList = this.sortMap(dist);
+
+        this.dijkstraList = this.sortMap(dist)
         return this.dijkstraList;
     }
 
@@ -247,5 +247,5 @@ class Graph {
 
 const graphInstance = new Graph();
 setInterval(graphInstance.dumpGraph, 24 * 60 * 60 * 1000);
- 
+
 module.exports = graphInstance;
