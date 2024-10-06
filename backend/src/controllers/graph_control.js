@@ -4,6 +4,71 @@ const { Friend, User }  = require('../models');
 
 const INF = 2147483647;
 const FILEPATH = path.join(process.env.GRAPH_JSON_PATH, 'graph.json');
+
+class MinHeap {
+    constructor() {
+        //node = [weight, node]
+        this.heap = [];
+    }
+
+    push(val) {
+        this.heap.push(val);
+        this.bubbleUp();
+    }
+
+    pop() {
+        const min = this.heap[0];
+        const end = this.heap.pop();
+        if (this.heap.length > 0) {
+            this.heap[0] = end;
+            this.bubbleDown();
+        }
+        return min;
+    }
+
+    bubbleUp() {
+        let idx = this.heap.length - 1;
+        const element = this.heap[idx];
+        while (idx > 0) {
+            let parentIdx = Math.floor((idx - 1) / 2);
+            let parent = this.heap[parentIdx];
+            if (element[0] >= parent[0]) break;
+            this.heap[parentIdx] = element;
+            this.heap[idx] = parent;
+            idx = parentIdx;
+        }
+    }
+    bubbleDown() {
+        let idx = 0;
+        const length = this.heap.length;
+        const element = this.heap[0];
+        while (true) {
+            let leftChildIdx = 2 * idx + 1;
+            let rightChildIdx = 2 * idx + 2;
+            let leftChild, rightChild;
+            let swap = null;
+            if (leftChildIdx < length) {
+                leftChild = this.heap[leftChildIdx];
+                if (leftChild[0] < element[0]) {
+                    swap = leftChildIdx;
+                }
+            }
+            if (rightChildIdx < length) {
+                rightChild = this.heap[rightChildIdx];
+                if (
+                    (swap === null && rightChild[0] < element) || 
+                    (swap !== null && rightChild[0] < leftChild)
+                ) {
+                    swap = rightChildIdx;
+                }
+            }
+            if (swap === null) break;
+            this.heap[idx] = this.heap[swap];
+            this.heap[swap] = element;
+            idx = swap;
+        }
+    }
+}
 class Graph {
     
     constructor() {
@@ -171,11 +236,12 @@ class Graph {
 
         dist.set(start, 0);
         // priority queue
-        queue.push([0, start]);
+        const minHeap = new MinHeap();
+        minHeap.push([0, start]);
         
-        while (queue.length !== 0) {
-            let u = queue[0][1];
-            queue.shift();
+        while (minHeap.heap.length !== 0) {
+            
+            let [ _, u ] = minHeap.pop();
 
             if (visited.get(u)) continue;
             visited.set(u, true);
@@ -185,12 +251,7 @@ class Graph {
                 
                 if (dist.get(v) > dist.get(u) + weight) {
                     dist.set(v, dist.get(u) + weight);
-                    queue.push([dist.get(v), v]);
-                    // sort value if value is same, sort by key
-                    queue.sort((a, b) =>{
-                        if(a[0] == b[0]) return a[1] - b[1];
-                        return a[0] - b[0];
-                    });
+                    minHeap.push([dist.get(v), v]);
                 }
             });
         }
