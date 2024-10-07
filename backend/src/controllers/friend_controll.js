@@ -79,7 +79,7 @@ exports.getRecommendations = async (req, res) => {
             },
             attributes: ['id', 'userName'],
         });
-        // Sort the results according to dijkstraList order
+        // TODO: find better way to avoide this sort 
         const sortedRecommendations = dijkstraList.map(id => 
             Recommendations.find(user => user.id === id)
         );
