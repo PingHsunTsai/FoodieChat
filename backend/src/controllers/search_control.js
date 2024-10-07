@@ -1,6 +1,18 @@
 const { Friend, User }  = require('../models');
 
 var LevenshteinDistance = function(word1, word2) {
+    // TODO: CHeckout Jaro-Winkler distance
+    // fast implementation of longestCommonPrefix
+    const longestCommonPrefix = (w1, w2) => {
+        let i = 0;
+        while (i < w1.length && i < w2.length && w1[i] === w2[i]) {
+            i++;
+        }
+        return i; // length of the common prefix
+    };
+
+    const lcpLength = longestCommonPrefix(word1, word2);
+
     const pd = [];
     for (let i = 0; i < word1.length + 1; i++) {
         pd.push(new Array(word2.length + 1).fill(0));  
@@ -38,7 +50,11 @@ var LevenshteinDistance = function(word1, word2) {
         };
     };
 
-    return pd[0][0]
+    const levenshteinDistance = pd[0][0]
+
+    const adjustmentFactor = 0.5; // Reduce more if the prefix is long (adjust this factor as needed)
+    const finalScore = levenshteinDistance - lcpLength * adjustmentFactor;
+    return finalScore;
 };
 
 exports.searchUsers = async (req, res) => {
@@ -53,6 +69,7 @@ exports.searchUsers = async (req, res) => {
             const distance = LevenshteinDistance(query, userName);
             return { userName, distance };  // Store the username and distance
         });
+        console.log('Results:', results);
         results.sort((a, b) => a.distance - b.distance);
         // Map the results back to the users
         const matchedUsers = results.map(result => {

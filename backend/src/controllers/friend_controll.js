@@ -71,7 +71,6 @@ exports.getStrangers = async (req, res) => {
 exports.getRecommendations = async (req, res) => {
     try{
         const dijkstraList = graphInstance.dijkstra(req.user.id);
-        console.log('dijkstraList:', dijkstraList);
         const Recommendations = await User.findAll({
             where: {
                 id: {
