@@ -71,7 +71,6 @@ exports.getStrangers = async (req, res) => {
 exports.getRecommendations = async (req, res) => {
     try{
         const dijkstraList = graphInstance.dijkstra(req.user.id);
-        console.log('dijkstraList:', dijkstraList);
         const Recommendations = await User.findAll({
             where: {
                 id: {
@@ -80,7 +79,7 @@ exports.getRecommendations = async (req, res) => {
             },
             attributes: ['id', 'userName'],
         });
-        // Sort the results according to dijkstraList order
+        // TODO: find better way to avoide this sort 
         const sortedRecommendations = dijkstraList.map(id => 
             Recommendations.find(user => user.id === id)
         );

@@ -1,7 +1,8 @@
 'use client';
+import { styles } from '../../../style';
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { Box, Button, List, ListItem, ListItemText, TextField, Typography, IconButton, ListItemAvatar, Avatar } from '@mui/material';
+import { Box, Button, List, ListItem, ListItemText, InputBase , Typography, IconButton, ListItemAvatar, Avatar } from '@mui/material';
 import CommentIcon from '@mui/icons-material/Comment';
 import SearchIcon from '@mui/icons-material/Search';
 
@@ -119,7 +120,17 @@ export default function UserPage() {
     };
 
     return (
-        <Box sx={{ display: 'flex', height: '100vh' }}>
+        <Box 
+            sx={{ 
+            position: 'fixed',       
+            top: 0,                  
+            left: 0,                 
+            right: 0,                
+            bottom: 0,               
+            display: 'flex', 
+            backgroundColor: styles.orange, 
+            }}
+        >
             <Box 
                 sx={{ 
                     padding: '16px',
@@ -128,48 +139,102 @@ export default function UserPage() {
                     flexDirection: 'column'
                 }}
             >
-                <Box sx={{paddingY: '16px'}}>
+                <Box 
+                    sx={{
+                        paddingY: '16px',
+                    }}
+                >
                     <Box sx={{display: 'flex'}}>
                         <Box sx={{
-                            width: '50%', 
+                            width: '70%', 
                             display: 'flex', 
-                            flexDirection: 'column' 
+                            flexDirection: 'column' ,
+                            alignItems: 'left', 
                         }}>
-                            <Typography variant="h4" textAlign="center">
+                            <Typography 
+                            variant="h1" 
+                            sx={{ 
+                                padding: '30px',
+                                fontFamily: styles.fontFamily,
+                                fontSize: '70px',
+                                fontWeight: 'bold',
+                                color: styles.white,
+                                textShadow: '1px 1px 3px rgba(0, 0, 0, 0.3)',
+                            }}
+                            >
                                 {loggedInUser ? loggedInUser.name : 'User Info'}
                             </Typography>
                         </Box>
                         <Box sx={{
-                            width: '50%', 
+                            width: '30%', 
                             display: 'flex', 
-                            flexDirection: 'column' 
+                            flexDirection: 'column',
+                            alignItems: 'right',
                         }}>
                             <Button 
-                            variant="outlined" 
-                            color="primary" 
-                            sx={{ marginTop: '16px' }}
-                            onClick={() => handleLogout(router)}
+                                variant="contained" 
+                                sx={{ 
+                                    marginTop: '60px',
+                                    height: '40px',
+                                    width: '140px',
+                                    backgroundColor: styles.red,
+                                    borderRadius: '20px',
+                                }}
+                                onClick={navExplore}
                             >
-                                Logout
+                                <Typography 
+                                    variant="h1" 
+                                    textAlign="center"
+                                    sx={{ 
+                                        padding: '15px',
+                                        fontFamily: styles.fontFamily,
+                                        fontSize: '15px',
+                                        fontWeight: 'bold',
+                                        color: styles.white,
+                                        textShadow: '1px 1px 3px rgba(0, 0, 0, 0.3)',
+                                    }}
+                                >
+                                    Explore
+                                </Typography>
                             </Button>
                         </Box>
+                        <Button 
+                            variant="contained" 
+                            sx={{ 
+                                marginTop: '60px',
+                                marginRight: '40px',
+                                height: '40px',
+                                width: '100px',
+                                borderRadius: '20px',
+                                backgroundColor: styles.red,
+                                }}
+                            onClick={() => handleLogout(router)}
+                        >
+                            <Typography 
+                                variant="h1" 
+                                textAlign="center"
+                                sx={{ 
+                                    padding: '15px',
+                                    fontFamily: styles.fontFamily,
+                                    fontSize: '15px',
+                                    fontWeight: 'bold',
+                                    color: styles.white,
+                                    textShadow: '1px 1px 3px rgba(0, 0, 0, 0.3)',
+                                }}
+                            >
+                                Logout
+                            </Typography>
+                        </Button>
                     </Box>
-                    <Button 
-                        variant="outlined" 
-                        color="primary" 
-                        fullWidth 
-                        sx={{ marginTop: '16px' }}
-                        onClick={navExplore}
-                    >
-                        Explore Foodie
-                    </Button>
                 </Box>
                 <Box 
                     sx={{ 
                         flexGrow: 1, 
                         overflowY: 'auto',
-                        paddingY: '16px',
-                        border: '4px solid white',
+                        alignSelf: 'center',
+                        width: '95%',
+                        backgroundColor: styles.white,
+                        boxShadow: 'inset 0px 5px 10px rgba(0, 0, 0, 0.8)',  
                         borderRadius: 5,
                     }}
                 >
@@ -181,7 +246,7 @@ export default function UserPage() {
                                     <IconButton 
                                         edge="end" 
                                         aria-label="comments" 
-                                        color='info' 
+                                        sx={{ color: styles.red }}
                                         onClick={() => setSelectedReceiver(item.friend)}
                                     >
                                         <CommentIcon />
@@ -189,12 +254,20 @@ export default function UserPage() {
                                 }
                             >
                                 <ListItemAvatar>
-                                    <Avatar>
-                                        <SearchIcon />
+                                    <Avatar sx={{ backgroundColor: styles.orange }} >
+                                        <SearchIcon sx={{ color: styles.red }} />
                                     </Avatar>
                                 </ListItemAvatar>
                                 <ListItemText
                                     primary={item.friend.userName}
+                                    sx={{
+                                        padding: '5px',
+                                        fontFamily: styles.fontFamily,
+                                        fontSize: '15px',
+                                        fontWeight: 'bold',
+                                        color: 'black',
+                                        textShadow: '1px 1px 1px rgba(0, 0, 0, 0.3)',               
+                                      }}
                                 />
                             </ListItem>
                         ))}
@@ -213,19 +286,53 @@ export default function UserPage() {
                 <Box 
                     sx={{ 
                         flexGrow: 1, 
-                        padding: '16px',
-                        border: '4px solid white',
+                        overflowY: 'auto',
+                        alignSelf: 'center',
+                        width: '95%',
+                        backgroundColor: styles.white,
+                        boxShadow: 'inset 0px 5px 10px rgba(0, 0, 0, 0.8)',  
                         borderRadius: 5,
                     }}
                 >
                     {selectedReceiver ? (
                         <Box>
-                            <Typography variant="h3" textAlign="center">
-                                {selectedReceiver.userName}
-                            </Typography>
-                            <Typography variant="h5" textAlign="center">
-                                {selectedReceiver.email}
-                            </Typography>
+                            <Box 
+                                sx={{ 
+                                    padding: '25px',
+                                    alignSelf: 'center',
+                                    backgroundColor: 'transparent',
+                                    boxShadow: 'inset 0px 5px 10px rgba(0, 0, 0, 0.8)',  
+                                }}
+                            >
+                                <Typography 
+                                    variant="h1" 
+                                    textAlign="left"
+                                    sx={{ 
+                                        marginTop: '10px',
+                                        fontFamily: styles.fontFamily,
+                                        fontSize: '50px',
+                                        fontWeight: 'bold',
+                                        color: styles.orange,
+                                        textShadow: '1px 1px 5px rgba(0, 0, 0, 0.3)',
+                                    }}
+                                >
+                                    {selectedReceiver.userName}
+                                </Typography>
+                                <Typography 
+                                    variant="h1" 
+                                    textAlign="left"
+                                    sx={{ 
+                                        marginTop: '16px',
+                                        fontFamily: styles.fontFamily,
+                                        fontSize: '30px',
+                                        fontWeight: 'bold',
+                                        color: styles.orange,
+                                        textShadow: '1px 1px 5px rgba(0, 0, 0, 0.3)',
+                                    }}
+                                >
+                                    {selectedReceiver.email}
+                                </Typography>
+                            </Box>
                             {/* Chat Box */}
                             <Box 
                                 sx={{ 
@@ -238,25 +345,43 @@ export default function UserPage() {
                             >
                                 <List>
                                     {messages.length === 0 ? (
-                                        <Typography variant="body2">No messages yet</Typography>
+                                        <Typography variant="body2"></Typography>
                                     ) : (
                                         messages.map((msg) => (
-                                            <ListItem>
-                                                <ListItemText    
+                                            <ListItem
+                                                sx={{
+                                                    justifyContent: msg.senderId === loggedInUser.id ? 'flex-start' : 'flex-end', 
+                                                }}
+                                            >
+                                                <ListItemText
+                                                    sx={{
+                                                        textAlign: msg.senderId === loggedInUser.id ? 'left' : 'right', 
+                                                        maxWidth: '60%', 
+                                                    }}
                                                     primary={
                                                         <Typography 
-                                                            component="span" 
-                                                            variant="body3" 
+                                                            sx={{
+                                                                fontFamily: styles.fontFamily,
+                                                                fontSize: '15px',
+                                                                fontWeight: 'bold',
+                                                                color: 'black',
+                                                                textShadow: '1px 1px 1px rgba(0, 0, 0, 0.3)',               
+                                                            }}
                                                         >
-                                                            {msg.senderId === loggedInUser.id ? 'You' : selectedReceiver.userName}
+                                                         {msg.senderId === loggedInUser.id ? 'You:' : selectedReceiver.userName+':'}
                                                         </Typography>
                                                     }
                                                     secondary={
                                                         <Typography 
-                                                            component="span" 
-                                                            variant="body1" 
+                                                        sx={{
+                                                            fontFamily: styles.fontFamily,
+                                                            fontSize: '15px',
+                                                            fontWeight: 'bold',
+                                                            color: 'black',
+                                                            textShadow: '1px 1px 1px rgba(0, 0, 0, 0.3)',               
+                                                        }} 
                                                         >
-                                                           --- {msg.content}
+                                                            {msg.content}
                                                         </Typography>
                                                     }
                                                 />
@@ -266,48 +391,52 @@ export default function UserPage() {
                                     <div ref={messagesEndRef} />
                                 </List> 
                             </Box>
-                            <Box sx={{ marginTop: '16px' }}>
-                                <TextField
-                                    id="outlined-multiline-static"
-                                    multiline
-                                    maxRows={4}
-                                    fullWidth
-                                    label="Send msg here!"
+                            <Box 
+                                sx={{ 
+                                    marginTop: '16px',
+                                    display: 'flex', 
+                                    height: '125px',        
+                                    alignItems: 'center',    
+                                    gap: '16px',  
+                                    boxShadow: 'inset 0px 5px 10px rgba(0, 0, 0, 0.8)',           
+                                }}
+                            >
+                                <InputBase
+                                    sx={{ ml: 2, flex: 1 }}
                                     value={newMessage}
                                     onChange={(e) => setNewMessage(e.target.value)}
-                                    InputLabelProps={{
-                                        sx: {
-                                          color: '#fff', // Default label color
-                                          '&.Mui-focused': {
-                                            color: 'info.dark', // Label color when focused
-                                          },
-                                        },
-                                    }}
-                                    sx={{
-                                        backgroundColor: '#000', // Ensure a visible background
-                                        '& .MuiInputBase-input': {
-                                          color: 'lightgray', // Ensure the text is visible
-                                        },
-                                        '& .MuiOutlinedInput-root': {
-                                          '& fieldset': {
-                                            borderColor: '#fff', // Set outline color
-                                          },
-                                        },
-                                    }}
+                                    placeholder="Send msg here!"
+                                    inputProps={{ 'aria-label': 'search google maps' }}
                                 />
                                 <Button 
                                     variant="contained" 
                                     color="primary" 
-                                    fullWidth 
-                                    sx={{ marginTop: '8px' }}
+                                    sx={{ 
+                                        marginRight: '40px',
+                                        height: '40px',
+                                        width: '100px',
+                                        borderRadius: '20px',
+                                        backgroundColor: styles.red,
+                                        }}
                                     onClick={sendMessage}
                                 >
-                                    Send Message
+                                    Send
                                 </Button>
                             </Box>
                         </Box>
                     ) : (
-                        <Typography variant="h3" textAlign="center">
+                        <Typography 
+                            variant="h1" 
+                            textAlign="center"
+                            sx={{ 
+                                marginTop: '300px',
+                                fontFamily: styles.fontFamily,
+                                fontSize: '40px',
+                                fontWeight: 'bold',
+                                color: styles.white,
+                                textShadow: '1px 1px 3px rgba(0, 0, 0, 0.3)',
+                            }}
+                        >
                             Catch up with a friend!
                         </Typography>
                     )}

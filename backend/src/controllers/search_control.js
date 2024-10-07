@@ -1,6 +1,18 @@
 const { Friend, User }  = require('../models');
 
 var LevenshteinDistance = function(word1, word2) {
+    // TODO: CHeckout Jaro-Winkler distance
+    // fast implementation of longestCommonPrefix
+    const longestCommonPrefix = (w1, w2) => {
+        let i = 0;
+        while (i < w1.length && i < w2.length && w1[i] === w2[i]) {
+            i++;
+        }
+        return i; // length of the common prefix
+    };
+
+    const lcpLength = longestCommonPrefix(word1, word2);
+
     const pd = [];
     for (let i = 0; i < word1.length + 1; i++) {
         pd.push(new Array(word2.length + 1).fill(0));  
@@ -38,28 +50,29 @@ var LevenshteinDistance = function(word1, word2) {
         };
     };
 
-    return pd[0][0]
+    const levenshteinDistance = pd[0][0]
+
+    const adjustmentFactor = 0.5; // Reduce more if the prefix is long (adjust this factor as needed)
+    const finalScore = levenshteinDistance - lcpLength * adjustmentFactor;
+    return finalScore;
 };
 
 exports.searchUsers = async (req, res) => {
     const query = req.query.q;
 
     try {
-        const users = await User.findAll();
-        const userNames = users.map(user => user.userName);
-
-        // Use fuzzball to find matches based on the search query
-        const results = userNames.map(userName => {
-            const distance = LevenshteinDistance(query, userName);
-            return { userName, distance };  // Store the username and distance
+        const users = await User.findAll({
+            attributes: ['id', 'userName'],
         });
+        // Calculate the Levenshtein distance and keep track of both user and distance
+        const results = users.map(user => {
+            const distance = LevenshteinDistance(query, user.userName);
+            return { ...user.dataValues, distance }; 
+        });
+
+        // Sort the results by Levenshtein distance
         results.sort((a, b) => a.distance - b.distance);
-        // Map the results back to the users
-        const matchedUsers = results.map(result => {
-            return users.find(user => user.userName === result.userName);
-        });
-
-        res.status(200).json(matchedUsers);
+        res.status(200).json(results);
     } catch (error) {
         console.error('Search error:', error);
         return res.status(500).json({ success: false, error: 'Search failed' });
