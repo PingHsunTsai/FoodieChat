@@ -1,7 +1,9 @@
 'use client';
 
+import { styles } from '../../../style';
 import { useState, useRef, use } from 'react';
 import { useRouter } from 'next/navigation';
+import { Box, Typography} from '@mui/material';
 import { handleError, drinkOptions, foodOptions, countryOptions } from '../../../components';
 
 
@@ -66,10 +68,34 @@ export default function Register() {
   };
 
   return (
-    <section>
-      <h1 className='font-black text-white lg:text-[80px] sm:text-[60px] xs:text-[50px] text-[40px] lg:leading-[98px] mt-2'>
-        FoodieChat Register
-      </h1>
+    <Box 
+      sx={{ 
+        position: 'fixed',       
+        top: 0,                  
+        left: 0,                 
+        right: 0,                
+        bottom: 0,               
+        display: 'flex', 
+        flexDirection: 'column', 
+        alignItems: 'center', 
+        backgroundColor: styles.orange, 
+        overflow: 'auto',
+      }}
+    >
+      <Typography 
+        variant="h1" 
+        textAlign="center"
+        sx={{ 
+          padding: '60px',
+          fontFamily: styles.fontFamily,
+          fontSize: '100px',
+          fontWeight: 'bold',
+          color: styles.white,
+          textShadow: '1px 1px 3px rgba(0, 0, 0, 0.3)',
+        }}
+      >
+        FoodieChat
+      </Typography>
       <form 
         ref={formRef}
         onSubmit={handleRegister} 
@@ -161,13 +187,14 @@ export default function Register() {
         </label>
         <button
             type="submit"
-            className="bg-sky-400 py-3 px-8 outline-none w-fit
+            style={{ backgroundColor: styles.red }}
+            className=" py-3 px-8 outline-none w-fit
             text-white font-bold shadow-md shadow-primary rounded-xl"
         >
           {loading ? "Registering..." : "Register"}
         </button>
         {error && <p style={{ color: 'red' }}>{error}</p>} 
       </form>
-    </section>
+      </Box>
   );
 }
