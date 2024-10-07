@@ -1,8 +1,8 @@
 const styles = {
     fontFamily: "Verdana, sans-serif",
-    orange: "#f1aa06",
-    white: "#dee2dc",
-    red: "#a21e21",
+    orange: "#fcd403", //"#f1aa06"
+    white: "#dee2dc", //
+    red: "#ed4255",
     green: "#5b6d51",
     paddingX: "sm:px-16 px-6",
     paddingY: "sm:py-16 py-6",
