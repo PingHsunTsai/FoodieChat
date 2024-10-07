@@ -1,7 +1,7 @@
 import { styles } from '../style';
 import  NavigateButtom  from '../components/NavigateButton';
 import Link from 'next/link';
-import { Box, Button, List, ListItem, ListItemText, TextField, Typography, IconButton, ListItemAvatar, Avatar } from '@mui/material';
+import { Box, Typography} from '@mui/material';
 
 const Home = () => {
 
