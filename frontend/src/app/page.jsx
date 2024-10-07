@@ -52,7 +52,7 @@ const Home = () => {
             alignItems: 'center',
         }}
       >
-        <NavigateButtom page='auth/login' />
+        <NavigateButtom page='auth/register' />
         <Box
           sx={{
             display: 'flex',           // Use flexbox to align items horizontally
@@ -94,7 +94,6 @@ const Home = () => {
             </Typography>
           </Link>
         </Box>
-        {/* <NavigateButtom page='auth/register' /> */}
       </Box>
     </Box>
   );
