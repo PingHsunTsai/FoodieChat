@@ -61,22 +61,22 @@ exports.searchUsers = async (req, res) => {
     const query = req.query.q;
 
     try {
-        const users = await User.findAll();
-        const userNames = users.map(user => user.userName);
-
-        // Use fuzzball to find matches based on the search query
-        const results = userNames.map(userName => {
-            const distance = LevenshteinDistance(query, userName);
-            return { userName, distance };  // Store the username and distance
+        // Fetch users from the database
+        const users = await User.findAll({
+            attributes: ['id', 'userName'],  // Fetch only necessary fields
         });
-        console.log('Results:', results);
+        // Calculate the Levenshtein distance and keep track of both user and distance
+        const results = users.map(user => {
+            // console.log('userNamser',user.userNamser);
+            const distance = LevenshteinDistance(query, user.userName);
+            return { ...user.dataValues, distance };  // Store the user data and distance together
+        });
+
+        // Sort the results by Levenshtein distance
         results.sort((a, b) => a.distance - b.distance);
-        // Map the results back to the users
-        const matchedUsers = results.map(result => {
-            return users.find(user => user.userName === result.userName);
-        });
 
-        res.status(200).json(matchedUsers);
+        // Return the sorted matched users
+        res.status(200).json(results);
     } catch (error) {
         console.error('Search error:', error);
         return res.status(500).json({ success: false, error: 'Search failed' });
