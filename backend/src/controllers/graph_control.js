@@ -222,7 +222,7 @@ class Graph {
     }
 
     // Dijkstra's algorithm for shortest path
-    dijkstra(start, k=5) {
+    dijkstra(start) {
         const start_user = this.userMap.get(start);
         const friends = start_user.friends.map(friend => friend.friendId);
         const dist = new Map();

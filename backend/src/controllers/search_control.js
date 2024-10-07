@@ -61,21 +61,17 @@ exports.searchUsers = async (req, res) => {
     const query = req.query.q;
 
     try {
-        // Fetch users from the database
         const users = await User.findAll({
-            attributes: ['id', 'userName'],  // Fetch only necessary fields
+            attributes: ['id', 'userName'],
         });
         // Calculate the Levenshtein distance and keep track of both user and distance
         const results = users.map(user => {
-            // console.log('userNamser',user.userNamser);
             const distance = LevenshteinDistance(query, user.userName);
-            return { ...user.dataValues, distance };  // Store the user data and distance together
+            return { ...user.dataValues, distance }; 
         });
 
         // Sort the results by Levenshtein distance
         results.sort((a, b) => a.distance - b.distance);
-
-        // Return the sorted matched users
         res.status(200).json(results);
     } catch (error) {
         console.error('Search error:', error);
