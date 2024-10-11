@@ -190,7 +190,7 @@ export default function UserPage() {
                                         fontFamily: styles.fontFamily,
                                         fontSize: '15px',
                                         fontWeight: 'bold',
-                                        color: styles.white,
+                                        color: styles.gray,
                                         textShadow: '1px 1px 3px rgba(0, 0, 0, 0.3)',
                                     }}
                                 >
@@ -218,7 +218,7 @@ export default function UserPage() {
                                     fontFamily: styles.fontFamily,
                                     fontSize: '15px',
                                     fontWeight: 'bold',
-                                    color: styles.white,
+                                    color: styles.gray,
                                     textShadow: '1px 1px 3px rgba(0, 0, 0, 0.3)',
                                 }}
                             >
@@ -233,7 +233,7 @@ export default function UserPage() {
                         overflowY: 'auto',
                         alignSelf: 'center',
                         width: '95%',
-                        backgroundColor: styles.white,
+                        backgroundColor: styles.gray,
                         boxShadow: 'inset 0px 5px 10px rgba(0, 0, 0, 0.8)',  
                         borderRadius: 5,
                     }}
@@ -289,7 +289,7 @@ export default function UserPage() {
                         overflowY: 'auto',
                         alignSelf: 'center',
                         width: '95%',
-                        backgroundColor: styles.white,
+                        backgroundColor: styles.gray,
                         boxShadow: 'inset 0px 5px 10px rgba(0, 0, 0, 0.8)',  
                         borderRadius: 5,
                     }}

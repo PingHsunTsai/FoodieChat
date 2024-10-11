@@ -67,7 +67,7 @@ export default function Login() {
             fontFamily: styles.fontFamily,
             fontSize: '70px',
             fontWeight: 'bold',
-            color: styles.white,
+            color: styles.gray,
             textShadow: '1px 1px 3px rgba(0, 0, 0, 0.3)',
           }}
         >
